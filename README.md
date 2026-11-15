@@ -67,3 +67,4 @@ save_indexed_safetensors(model, "checkpoints/qwen25_3b_ffmod_fp8.safetensors")
 - [`src/`](src/) — Kísérleti kutatási sorozat (`exp1_oracle.py` .. `exp8_bitsplit_fp8_benchmark.py`).
 - [`tests/`](tests/) — GPU ellenőrző tesztcsomagok (`test_milestone1_package.py`, `test_milestone3_server.py`).
 - [`KISERLETI_JELENTES.md`](KISERLETI_JELENTES.md) — Teljes magyar nyelvű kísérleti és production dokumentáció.
+- [`ideas.md`](ideas.md) — Gyakorlati alkalmazási területek, fizikai határok és következő generációs K+F irányok.
