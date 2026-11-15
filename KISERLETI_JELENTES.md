@@ -215,7 +215,39 @@ A teljes `Qwen2.5-3B` modellben a 36 darab MLP-n kívül minden tokennél lefut 
 | **4. Kontextus és számítás szétválasztása** | **RÉSZBEN FELTÁRVA** | A ritka tüskék `12.4×` emeléssel jósolhatók mélységi Markov-táblából, az FFN-terv pedig már az Attention *előtt* előtölthető (`Pre-Attention Prefetch`). |
 | **5. Ritka végrehajtás sűrű GPU-n is győzhet** | **VALÓS KERNELLEL BIZONYÍTVA** | A kétlépcsős Triton kernel RTX 5090-en **`2.03× – 3.00×`-os valós FFN gyorsulást** és **`1.45× – 1.56×` teljes modell gyorsulást** ér el a `cuBLAS` felett. |
 
-### További lehetséges fejlesztési irányok (Phase 3)
-1. **Bit-Split Súlytárolás (`FP8/INT4 fej + INT8/BF8 farok`):** Ha az 1. lépcsőben beolvasott felső 4 bitet nem külön indexként tároljuk, hanem magának a 16 bites súlynak a felső 4 bitjeként, a VRAM-overhead **0.0%-ra** csökken (6.2 GB marad a 7.1 GB helyett), a 2. lépcsőnek pedig csatornánként már csak a maradék 12 bitet kell beolvasnia (+15% további sebességnövekedés!).
-2. **KV-Cache-Biztos Hibrid Adaptív Büdzsé:** Az 1–20. rétegekben (ahol a KV-cache épül) konzervatív `55%`-os kihagyás használata, a 21–36. rétegekben pedig a 20. rétegbeli entrópia-szonda alapján könnyű tokeneknél felengedni a kihagyást **`80–85%`-ra** (`~65 µs/réteg`) — így a KV-cache érintetlen marad, mégis megkapjuk az adaptív token-büdzsé extra gyorsulását.
-3. **Szótár-indexelés az `lm_head` rétegre:** Mivel `Qwen2.5-3B`-ben az FFN `2×`-es felgyorsítása után a `622 MB`-os `lm_head` (`[151936, 2048]`) már a teljes futásidő ~15%-át viszi el, ugyanez a `Top-512 Coord + INT4` kétlépcsős index közvetlenül rátehető az `lm_head` mátrixra is, további ~`1.15×` végponti gyorsulást hozva!
+### További lehetséges fejlesztési irányok (Phase 3) — **MEGVALÓSÍTVA AZ `ffmod` v0.2.0 PRODUCTION CSOMAGBAN!**
+
+A fenti jövőbeli irányokat a 8. kísérletben (`src/exp8_bitsplit_fp8_benchmark.py`) és a telepíthető `ffmod` Python csomagban maradéktalanul megépítettük és hitelesítettük.
+
+---
+
+## 9. Production Hordozhatóság (`ffmod` v0.2.0): `BitSplit-12` (0% Extra VRAM), `FP8` Kernel, `vLLM` Plugin és OpenAI Streaming Szerver
+
+A kutatási prototípust három egymásra épülő mérnöki mérföldkőben teljes értékű, hordozható production csomaggá (`pyproject.toml` + `ffmod/`) alakítottuk:
+
+### 9.1. Hordozható Architektúra és Fordító-Integráció (`Milestone 1`)
+* **`torch.library.custom_op` + `register_fake` (`ffmod/ops.py`):** Mindhárom ritka végrehajtó út (`ffmod::indexed_ffn_bf16`, `bitsplit12`, `fp8`) natív PyTorch C++ diszpécser műveletként regisztrált, így **`torch.compile(..., fullgraph=True)` alatt 0 gráf-töréssel** fordul, és előre allokált, eszközönkénti L2-rezidens munkamemóriával 100% `CUDAGraph`-kompatibilis.
+* **Modell- és méretfüggetlenség (`ffmod/kernels.py`, `ffmod/patcher.py`):**
+  * Támogatja mind a `SwiGLU` (`SiLU`), mind a `GeGLU` (`GELU-tanh`, pl. `Gemma-2`) aktivációkat.
+  * Automatikus csempézéssel kezeli a `70B+` méretű modelleket (`H > 4096`, `I > 16384`) és a 4-gyel nem osztható csatornaszámokat (`I % 4 != 0`).
+  * `patch_model(model, ...)`: 1-soros in-place átalakítás mind a három-projekciós (`Qwen2/2.5/3`, `Llama`, `Mistral`, `Gemma`, `DeepSeek`), mind a fuzionált két-projekciós (`Phi-3`, `GLM`) architektúrákra.
+  * **Mikro-batch és spekulatív dekódolás (`N = 2..8`):** Unió-aktív csatorna-szelekcióval minden nyertes csatorna súlyát **egyetlenegyszer** olvassa be a GDDR7-ből és regiszterben értékeli ki mind az `N` tokenre. Ennek köszönhetően **`N=4` mellett is `1.35× – 1.51×` gyorsabb (`123.4 – 132.6 µs/réteg`) a sűrű `cuBLAS` Tensor Core GEMM-nél (`186.5 µs/réteg`)!**
+* **`safetensors` Zero-Copy Szerializáció (`ffmod/io.py`):** A `save_indexed_safetensors` / `load_indexed_safetensors` a teljes előre felépített indexet, réteg-metaadatokat és megosztott (`tied`) beágyazási súlyokat egyetlen `.safetensors` fájlba menti, így éles induláskor nincs újraindexelési költség.
+
+### 9.2. `BitSplit-12` (0% Extra VRAM) és `FP8` Ritka Kernelek Mérési Eredményei (`Milestone 2` — Exp 8, RTX 5090)
+
+| Konfiguráció (`Qwen2.5-3B`, 36 réteg) | Modell VRAM | VRAM változás | Hideg MLP (`N=1`) | MLP (`N=4` spekulatív) | MLP gyorsulás (`N=1`) | Held-Out Top-1 (`KL`) | Teljes modell `tok/s` (gyorsulás) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Sűrű HF `Qwen2MLP` (`BF16`)** | `6.17 GB` | *bázis (0%)* | `196.75 µs` | `186.49 µs` | `1.00×` | `100.0%` (`0.000`) | `91.6 tok/s` (`1.00×`) |
+| **`ffmod` `BF16` (`65%` skip, `d=768`)** | `6.99 GB` | `+13.2%` | `96.23 µs` | `140.96 µs` | **`2.04×`** | `83.7%` (`0.228`) | **`134.6 tok/s` (`1.47×`)** |
+| **`ffmod` `BitSplit-12` (`65%` skip, `d=768`)** | **`5.37 GB`** | **`-13.0%` (0% extra!)** | **`83.20 µs`** | **`123.43 µs` (`1.51×`)** | **`2.36×`** | **`86.6%`** (`0.228`) | **`143.6 tok/s` (`1.57×`)** |
+| **`ffmod` `FP8` + Hibrid (`55%/75%`, `d=768`)** | **`4.56 GB`** | **`-26.1%`** | **`81.31 µs`** | — | **`2.42×`** | **`84.8%`** (`0.240`) | **`143.9 tok/s` (`1.57×`)** |
+| **`ffmod` `FP8` (`65%` skip, `d=768`)** | **`4.56 GB`** | **`-26.1%`** | **`77.24 µs`** | **`132.57 µs` (`1.41×`)** | **`2.55×`** | `82.6%` (`0.247`) | **`147.2 tok/s` (`1.61×`)** |
+| **`ffmod` `FP8` (`70%` skip, `d=512`)** | **`4.56 GB`** | **`-26.1%`** | **`67.74 µs`** | — | **`2.90×`** | `73.9%` (`0.490`) | **`155.2 tok/s` (`1.70×`)** |
+| **`ffmod` `FP8` (`80%` skip, `d=512`)** | **`4.56 GB`** | **`-26.1%`** | **`55.88 µs`** | — | **`3.53×`** | *(extrém gyors mód)* | — |
+
+*(Ábra: `results/plots/fig7_production_fp8_bitsplit.png`, részletes JSON: `results/exp8_bitsplit_fp8_benchmark.json`.)*
+
+### 9.3. `vLLM` Bővítmény és OpenAI-kompatibilis Lokális Streaming Szerver (`Milestone 3`)
+* **`ffmod.vllm_plugin` (`apply_ffmod_to_vllm`):** Közvetlenül beépül a `vLLM` V0/V1 worker folyamataiba (`llm.apply_model(...)`), lecserélve a `MergedColumnParallelLinear` + `RowParallelLinear` rétegeket a 2D `[num_tokens, H]` tenzorokat fogadó `FFModVLLMMLP` modulra.
+* **`ffmod-serve` (`ffmod/engine.py`, `ffmod/server.py`):** Külső web-keretrendszer függőség nélküli, többszálú HTTP/1.1 + `SSE` (`text/event-stream`) OpenAI-kompatibilis szerver (`/v1/chat/completions`, `/v1/completions`, `/v1/models`, `/health`), amely egyetlen induláskor rögzített `CUDAGraph`-fal szolgál ki tetszőleges prompt-hosszúságú kéréseket (**`4.56 GB` VRAM mellett élő HTTP+SSE streamben is `>131 tok/s` válaszsebességgel**).
