@@ -1,0 +1,271 @@
+{
+  "experiment": "exp8_bitsplit_fp8_production_benchmark",
+  "elapsed_sec": 79.0,
+  "vram_summary_gb": {
+    "dense_bf16": 6.172,
+    "ffmod_bf16": 6.987,
+    "ffmod_bitsplit12": 5.367,
+    "ffmod_fp8": 4.557
+  },
+  "cold_36layer_mlp_n1": {
+    "dense_qwen2_mlp_us": 196.75,
+    "bf16_d768": [
+      {
+        "sparsity": 0.5,
+        "us_per_layer": 124.03,
+        "speedup": 1.586
+      },
+      {
+        "sparsity": 0.6,
+        "us_per_layer": 105.57,
+        "speedup": 1.864
+      },
+      {
+        "sparsity": 0.65,
+        "us_per_layer": 96.23,
+        "speedup": 2.045
+      },
+      {
+        "sparsity": 0.7,
+        "us_per_layer": 87.28,
+        "speedup": 2.254
+      },
+      {
+        "sparsity": 0.75,
+        "us_per_layer": 78.02,
+        "speedup": 2.522
+      },
+      {
+        "sparsity": 0.8,
+        "us_per_layer": 69.38,
+        "speedup": 2.836
+      }
+    ],
+    "bitsplit12_d768": [
+      {
+        "sparsity": 0.5,
+        "us_per_layer": 105.59,
+        "speedup": 1.863
+      },
+      {
+        "sparsity": 0.6,
+        "us_per_layer": 90.53,
+        "speedup": 2.173
+      },
+      {
+        "sparsity": 0.65,
+        "us_per_layer": 83.2,
+        "speedup": 2.365
+      },
+      {
+        "sparsity": 0.7,
+        "us_per_layer": 76.02,
+        "speedup": 2.588
+      },
+      {
+        "sparsity": 0.75,
+        "us_per_layer": 68.69,
+        "speedup": 2.864
+      },
+      {
+        "sparsity": 0.8,
+        "us_per_layer": 61.67,
+        "speedup": 3.19
+      }
+    ],
+    "fp8_d768": [
+      {
+        "sparsity": 0.5,
+        "us_per_layer": 95.41,
+        "speedup": 2.062
+      },
+      {
+        "sparsity": 0.6,
+        "us_per_layer": 83.21,
+        "speedup": 2.365
+      },
+      {
+        "sparsity": 0.65,
+        "us_per_layer": 77.24,
+        "speedup": 2.547
+      },
+      {
+        "sparsity": 0.7,
+        "us_per_layer": 71.63,
+        "speedup": 2.747
+      },
+      {
+        "sparsity": 0.75,
+        "us_per_layer": 65.33,
+        "speedup": 3.012
+      },
+      {
+        "sparsity": 0.8,
+        "us_per_layer": 59.42,
+        "speedup": 3.311
+      }
+    ],
+    "fp8_d512": [
+      {
+        "sparsity": 0.5,
+        "us_per_layer": 91.5,
+        "speedup": 2.15
+      },
+      {
+        "sparsity": 0.6,
+        "us_per_layer": 79.3,
+        "speedup": 2.481
+      },
+      {
+        "sparsity": 0.65,
+        "us_per_layer": 73.35,
+        "speedup": 2.682
+      },
+      {
+        "sparsity": 0.7,
+        "us_per_layer": 67.74,
+        "speedup": 2.905
+      },
+      {
+        "sparsity": 0.75,
+        "us_per_layer": 61.57,
+        "speedup": 3.196
+      },
+      {
+        "sparsity": 0.8,
+        "us_per_layer": 55.52,
+        "speedup": 3.544
+      }
+    ]
+  },
+  "cold_36layer_mlp_n4_speculative": {
+    "dense_qwen2_mlp_us": 186.49,
+    "bf16_d768_s65_us": 140.96,
+    "bitsplit12_d768_s65_us": 123.43,
+    "fp8_d768_s65_us": 132.57
+  },
+  "e2e_configs": [
+    {
+      "id": "dense_bf16",
+      "label": "Dense BF16 (6.17 GB)",
+      "short_label": "Dense\nBF16",
+      "payload_mode": "dense_bf16",
+      "model_vram_gb": 6.172,
+      "mean_kl": 0.0,
+      "top1_agreement": 1.0,
+      "ms_per_token": 10.922,
+      "tokens_per_sec": 91.56,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM"
+    },
+    {
+      "id": "ffmod_bf16_s65",
+      "label": "ffmod BF16 65% (6.99 GB)",
+      "short_label": "ffmod BF16\n(65% skip)",
+      "payload_mode": "bf16",
+      "model_vram_gb": 6.987,
+      "mean_kl": 0.2301,
+      "top1_agreement": 0.837,
+      "category_top1": {
+        "factual": 0.7568,
+        "reasoning": 0.8696,
+        "code": 0.9451,
+        "hungarian": 0.7215
+      },
+      "ms_per_token": 7.431,
+      "tokens_per_sec": 134.57,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and GPU, while compute FLOPs refer to the number of floating-point operations that can be performed by the GPU.\n2. In LLM inference, the"
+    },
+    {
+      "id": "ffmod_bitsplit12_s65",
+      "label": "BitSplit-12 65% (5.37 GB)",
+      "short_label": "BitSplit-12\n(65% skip)",
+      "payload_mode": "bitsplit12",
+      "model_vram_gb": 5.367,
+      "mean_kl": 0.2063,
+      "top1_agreement": 0.8659,
+      "category_top1": {
+        "factual": 0.8378,
+        "reasoning": 0.8841,
+        "code": 0.967,
+        "hungarian": 0.7468
+      },
+      "ms_per_token": 6.965,
+      "tokens_per_sec": 143.57,
+      "sample_text": "Memory bandwidth is a critical factor in determining the performance of large language model (LLM) inference, particularly when it comes to single-batch processing. Here's a concise explanation of why memory bandwidth is a bottleneck:\n\n1. **Data Transfer"
+    },
+    {
+      "id": "ffmod_bitsplit12_hybrid",
+      "label": "BitSplit-12 Hybrid 55/75% (5.37 GB)",
+      "short_label": "BitSplit-12\nHybrid",
+      "payload_mode": "bitsplit12",
+      "model_vram_gb": 5.367,
+      "mlp_us_per_layer": 87.99,
+      "mean_kl": 0.2595,
+      "top1_agreement": 0.8225,
+      "category_top1": {
+        "factual": 0.7027,
+        "reasoning": 0.8696,
+        "code": 0.978,
+        "hungarian": 0.6582
+      },
+      "ms_per_token": 7.141,
+      "tokens_per_sec": 140.04,
+      "sample_text": "Memory bandwidth is the rate at which data can be transferred between the CPU and the GPU. It is a critical factor in determining the speed of a GPU's performance. In the context of LLMs, the amount of data that needs to"
+    },
+    {
+      "id": "ffmod_fp8_s65",
+      "label": "FP8 65% (4.56 GB)",
+      "short_label": "ffmod FP8\n(65% skip)",
+      "payload_mode": "fp8",
+      "model_vram_gb": 4.557,
+      "mean_kl": 0.2007,
+      "top1_agreement": 0.8261,
+      "category_top1": {
+        "factual": 0.8108,
+        "reasoning": 0.8551,
+        "code": 0.989,
+        "hungarian": 0.6203
+      },
+      "ms_per_token": 6.792,
+      "tokens_per_sec": 147.23,
+      "sample_text": "Memory bandwidth is a critical factor in determining the performance of large language model (LLM) inference, particularly for single-batch models. Here's a concise explanation:\n\n1. **Data Transfer Overhead**: In LLMs, the primary"
+    },
+    {
+      "id": "ffmod_fp8_hybrid",
+      "label": "FP8 Hybrid 55/75% (4.56 GB)",
+      "short_label": "ffmod FP8\nHybrid",
+      "payload_mode": "fp8",
+      "model_vram_gb": 4.557,
+      "mlp_us_per_layer": 81.31,
+      "mean_kl": 0.24,
+      "top1_agreement": 0.8478,
+      "category_top1": {
+        "factual": 0.7838,
+        "reasoning": 0.8841,
+        "code": 0.967,
+        "hungarian": 0.7089
+      },
+      "ms_per_token": 6.948,
+      "tokens_per_sec": 143.93,
+      "sample_text": "Memory bandwidth is a critical factor in limiting the performance of large language model (LLM) inference, even when using high-performance hardware. Here's a concise explanation:\n\n1. **Data Transfer**: LLMs require vast amounts of data to"
+    },
+    {
+      "id": "ffmod_fp8_s70",
+      "label": "FP8 70% d=512 (4.56 GB)",
+      "short_label": "ffmod FP8\n(70% d=512)",
+      "payload_mode": "fp8",
+      "model_vram_gb": 4.557,
+      "mean_kl": 0.4264,
+      "top1_agreement": 0.7391,
+      "category_top1": {
+        "factual": 0.6486,
+        "reasoning": 0.8116,
+        "code": 0.9011,
+        "hungarian": 0.5316
+      },
+      "ms_per_token": 6.442,
+      "tokens_per_sec": 155.23,
+      "sample_text": "Memory bandwidth is the rate at which data can be transferred between the CPU and GPU, or between the GPU and GPU, or between the GPU and memory. It is a critical factor in determining the speed of LLM inference, as it limits"
+    }
+  ]
+}

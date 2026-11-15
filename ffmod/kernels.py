@@ -208,7 +208,7 @@ def k3_reduce_and_select_channels(
     part_g_ptr,      # [N, SPLIT_D, I_PAD] bf16
     part_u_ptr,      # [N, SPLIT_D, I_PAD] bf16
     scale_prod_ptr,  # [2 * I_PAD] fp32: [rg, ru * col_norm_down] (0 on padded channels!)
-    scores_buf_ptr,  # [I_PAD] fp32 scratch (used only when I_PAD > 16384 or N > 1)
+    scores_buf_ptr,  # [I_PAD] fp32 scratch (used only when I_PAD > 16384)
     ch_idx_ptr,      # [TARGET_K] int32
     I_REAL: tl.constexpr,
     I_PAD: tl.constexpr,
@@ -218,22 +218,24 @@ def k3_reduce_and_select_channels(
     BLOCK_I: tl.constexpr,
     ACT_TYPE: tl.constexpr,
 ):
-    if I_PAD <= 16384 and N_TOKENS == 1:
+    if I_PAD <= 16384:
         offs = tl.arange(0, BLOCK_I)
         valid = offs < I_REAL
-
-        acc_g = tl.zeros([BLOCK_I], dtype=tl.float32)
-        acc_u = tl.zeros([BLOCK_I], dtype=tl.float32)
-        for s in tl.static_range(SPLIT_D):
-            acc_g += tl.load(part_g_ptr + s * I_PAD + offs, mask=valid, other=0.0).to(tl.float32)
-            acc_u += tl.load(part_u_ptr + s * I_PAD + offs, mask=valid, other=0.0).to(tl.float32)
-
         rg = tl.load(scale_prod_ptr + offs, mask=valid, other=0.0)
         ru_cn = tl.load(scale_prod_ptr + I_PAD + offs, mask=valid, other=0.0)
 
-        g_val = acc_g * rg
-        sc = tl.abs(_act_fn(g_val, ACT_TYPE) * acc_u) * ru_cn
-        log_sc = tl.where(valid, tl.log2(sc + 1e-20), -100.0)
+        max_sc = tl.zeros([BLOCK_I], dtype=tl.float32)
+        for n in tl.static_range(N_TOKENS):
+            acc_g = tl.zeros([BLOCK_I], dtype=tl.float32)
+            acc_u = tl.zeros([BLOCK_I], dtype=tl.float32)
+            n_base = n * SPLIT_D * I_PAD
+            for s in tl.static_range(SPLIT_D):
+                acc_g += tl.load(part_g_ptr + n_base + s * I_PAD + offs, mask=valid, other=0.0).to(tl.float32)
+                acc_u += tl.load(part_u_ptr + n_base + s * I_PAD + offs, mask=valid, other=0.0).to(tl.float32)
+            sc_n = tl.abs(_act_fn(acc_g * rg, ACT_TYPE) * acc_u) * ru_cn
+            max_sc = tl.maximum(max_sc, sc_n)
+
+        log_sc = tl.where(valid, tl.log2(max_sc + 1e-20), -100.0)
 
         lo = -70.0
         hi = tl.max(log_sc, axis=0) + 0.01
@@ -350,6 +352,41 @@ def k4_sparse_ffn_bf16(
             final_y = tl.load(y_fp32_ptr + offs_h, mask=mask_h, other=0.0).to(tl.bfloat16)
             tl.store(y_bf16_ptr + offs_h, final_y, mask=mask_h)
             tl.store(done_cnt_ptr + zero_offs, 0, mask=is_lane0)
+    elif H <= 4096:
+        # Register-accumulated Union-Channel Multi-Token Fast Path (2 <= N_TOKENS <= 8, H <= 4096):
+        # Loads each winning channel ONCE from GDDR7, evaluates ALL N_TOKENS in registers, and issues ONE atomic_add!
+        offs_h = tl.arange(0, BLOCK_H)
+        mask_h = offs_h < H
+        offs_n = tl.arange(0, BLOCK_N)
+        mask_n = offs_n < N_TOKENS
+        mask_nh = mask_n[:, None] & mask_h[None, :]
+
+        x_mat = tl.load(x_ptr + offs_n[:, None] * H + offs_h[None, :], mask=mask_nh, other=0.0).to(tl.float32)
+        acc_y = tl.zeros([BLOCK_N, BLOCK_H], dtype=tl.float32)
+
+        for p in range(pid, TARGET_K, NUM_PROGRAMS):
+            ch = tl.load(ch_idx_ptr + p).to(tl.int64)
+            base = w_ch_ptr + ch * STRIDE_CH
+            wg = tl.load(base + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+            wu = tl.load(base + H + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+            wd = tl.load(base + 2 * H + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+
+            g_tok = tl.sum(x_mat * wg[None, :], axis=1)
+            u_tok = tl.sum(x_mat * wu[None, :], axis=1)
+            z_tok = tl.where(mask_n, _act_fn(g_tok, ACT_TYPE) * u_tok, 0.0)
+            acc_y += z_tok[:, None] * wd[None, :]
+
+        tl.atomic_add(y_fp32_ptr + offs_n[:, None] * H + offs_h[None, :], acc_y, mask=mask_nh, sem="release")
+        tl.debug_barrier()
+
+        is_lane0 = offs_h == 0
+        zero_offs = tl.zeros([BLOCK_H], dtype=tl.int32)
+        prev = tl.atomic_add(done_cnt_ptr + zero_offs, 1, mask=is_lane0, sem="acq_rel")
+        prev_bcast = tl.sum(tl.where(is_lane0, prev, 0), axis=0)
+        if prev_bcast == NUM_PROGRAMS - 1:
+            final_y = tl.load(y_fp32_ptr + offs_n[:, None] * H + offs_h[None, :], mask=mask_nh, other=0.0).to(tl.bfloat16)
+            tl.store(y_bf16_ptr + offs_n[:, None] * H + offs_h[None, :], final_y, mask=mask_nh)
+            tl.store(done_cnt_ptr + zero_offs, 0, mask=is_lane0)
     else:
         # General tiled H & Multi-Token Union-Reuse path (2 <= N_TOKENS <= 8 or H > 4096):
         # Loads each winning channel's weights ONCE from GDDR7 and evaluates ALL N_TOKENS in registers!
@@ -455,6 +492,45 @@ def k4_sparse_ffn_fp8(
         if prev_bcast == NUM_PROGRAMS - 1:
             final_y = tl.load(y_fp32_ptr + offs_h, mask=mask_h, other=0.0).to(tl.bfloat16)
             tl.store(y_bf16_ptr + offs_h, final_y, mask=mask_h)
+            tl.store(done_cnt_ptr + zero_offs, 0, mask=is_lane0)
+    elif H <= 4096:
+        # Register-accumulated Union-Channel Multi-Token Fast Path (2 <= N_TOKENS <= 8, H <= 4096):
+        # Loads each winning channel ONCE from GDDR7, evaluates ALL N_TOKENS in registers, and issues ONE atomic_add!
+        offs_h = tl.arange(0, BLOCK_H)
+        mask_h = offs_h < H
+        offs_n = tl.arange(0, BLOCK_N)
+        mask_n = offs_n < N_TOKENS
+        mask_nh = mask_n[:, None] & mask_h[None, :]
+
+        x_mat = tl.load(x_ptr + offs_n[:, None] * H + offs_h[None, :], mask=mask_nh, other=0.0).to(tl.float32)
+        acc_y = tl.zeros([BLOCK_N, BLOCK_H], dtype=tl.float32)
+
+        for p in range(pid, TARGET_K, NUM_PROGRAMS):
+            ch = tl.load(ch_idx_ptr + p).to(tl.int64)
+            base = w_ch_fp8_ptr + ch * STRIDE_CH
+            wg = tl.load(base + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+            wu = tl.load(base + H + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+            wd = tl.load(base + 2 * H + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+
+            sg = tl.load(ch_scales_ptr + ch * 3 + 0)
+            su = tl.load(ch_scales_ptr + ch * 3 + 1)
+            sd = tl.load(ch_scales_ptr + ch * 3 + 2)
+
+            g_tok = tl.sum(x_mat * wg[None, :], axis=1) * sg
+            u_tok = tl.sum(x_mat * wu[None, :], axis=1) * su
+            z_tok = tl.where(mask_n, (_act_fn(g_tok, ACT_TYPE) * u_tok) * sd, 0.0)
+            acc_y += z_tok[:, None] * wd[None, :]
+
+        tl.atomic_add(y_fp32_ptr + offs_n[:, None] * H + offs_h[None, :], acc_y, mask=mask_nh, sem="release")
+        tl.debug_barrier()
+
+        is_lane0 = offs_h == 0
+        zero_offs = tl.zeros([BLOCK_H], dtype=tl.int32)
+        prev = tl.atomic_add(done_cnt_ptr + zero_offs, 1, mask=is_lane0, sem="acq_rel")
+        prev_bcast = tl.sum(tl.where(is_lane0, prev, 0), axis=0)
+        if prev_bcast == NUM_PROGRAMS - 1:
+            final_y = tl.load(y_fp32_ptr + offs_n[:, None] * H + offs_h[None, :], mask=mask_nh, other=0.0).to(tl.bfloat16)
+            tl.store(y_bf16_ptr + offs_n[:, None] * H + offs_h[None, :], final_y, mask=mask_nh)
             tl.store(done_cnt_ptr + zero_offs, 0, mask=is_lane0)
     else:
         TILE_H: tl.constexpr = 2048
@@ -562,6 +638,44 @@ def k4_sparse_ffn_bitsplit12(
         if prev_bcast == NUM_PROGRAMS - 1:
             final_y = tl.load(y_fp32_ptr + offs_h, mask=mask_h, other=0.0).to(tl.bfloat16)
             tl.store(y_bf16_ptr + offs_h, final_y, mask=mask_h)
+            tl.store(done_cnt_ptr + zero_offs, 0, mask=is_lane0)
+    elif H <= 4096:
+        # Register-accumulated Union-Channel Multi-Token Fast Path (2 <= N_TOKENS <= 8, H <= 4096):
+        # Loads each winning channel ONCE from GDDR7, evaluates ALL N_TOKENS in registers, and issues ONE atomic_add!
+        offs_h = tl.arange(0, BLOCK_H)
+        mask_h = offs_h < H
+        offs_n = tl.arange(0, BLOCK_N)
+        mask_n = offs_n < N_TOKENS
+        mask_nh = mask_n[:, None] & mask_h[None, :]
+
+        x_mat = tl.load(x_ptr + offs_n[:, None] * H + offs_h[None, :], mask=mask_nh, other=0.0).to(tl.float32)
+        acc_y = tl.zeros([BLOCK_N, BLOCK_H], dtype=tl.float32)
+
+        for p in range(pid, TARGET_K, NUM_PROGRAMS):
+            ch = tl.load(ch_idx_ptr + p).to(tl.int64)
+            base_gu = w_gu_fp8_ptr + ch * (2 * H)
+            wg = tl.load(base_gu + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+            wu = tl.load(base_gu + H + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+            wd = tl.load(w_d_bf16_ptr + ch * H + offs_h, mask=mask_h, other=0.0).to(tl.float32)
+
+            sg = tl.load(gu_scales_ptr + ch * 2 + 0)
+            su = tl.load(gu_scales_ptr + ch * 2 + 1)
+
+            g_tok = tl.sum(x_mat * wg[None, :], axis=1) * sg
+            u_tok = tl.sum(x_mat * wu[None, :], axis=1) * su
+            z_tok = tl.where(mask_n, _act_fn(g_tok, ACT_TYPE) * u_tok, 0.0)
+            acc_y += z_tok[:, None] * wd[None, :]
+
+        tl.atomic_add(y_fp32_ptr + offs_n[:, None] * H + offs_h[None, :], acc_y, mask=mask_nh, sem="release")
+        tl.debug_barrier()
+
+        is_lane0 = offs_h == 0
+        zero_offs = tl.zeros([BLOCK_H], dtype=tl.int32)
+        prev = tl.atomic_add(done_cnt_ptr + zero_offs, 1, mask=is_lane0, sem="acq_rel")
+        prev_bcast = tl.sum(tl.where(is_lane0, prev, 0), axis=0)
+        if prev_bcast == NUM_PROGRAMS - 1:
+            final_y = tl.load(y_fp32_ptr + offs_n[:, None] * H + offs_h[None, :], mask=mask_nh, other=0.0).to(tl.bfloat16)
+            tl.store(y_bf16_ptr + offs_n[:, None] * H + offs_h[None, :], final_y, mask=mask_nh)
             tl.store(done_cnt_ptr + zero_offs, 0, mask=is_lane0)
     else:
         TILE_H: tl.constexpr = 2048

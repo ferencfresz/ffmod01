@@ -168,9 +168,9 @@ class IndexedSwiGLULayer(nn.Module):
         Wu = w_up.to(device=work_dev, dtype=torch.float32)
         Wd = w_down.to(device=work_dev, dtype=torch.float32)  # [H, I]
 
-        # 1. Zero-data column smooth factors & MSE-optimal clipped INT4 row scales
-        col_gate = Wg.pow(2).mean(dim=0).sqrt().clamp(min=1e-6)  # [H]
-        col_up = Wu.pow(2).mean(dim=0).sqrt().clamp(min=1e-6)    # [H]
+        # 1. Zero-data SmoothQuant (alpha=0.5, RMS^0.5) column factors & MSE-optimal clipped INT4 row scales
+        col_gate = Wg.pow(2).mean(dim=0).sqrt().sqrt().clamp(min=1e-5)  # [H]
+        col_up = Wu.pow(2).mean(dim=0).sqrt().sqrt().clamp(min=1e-5)    # [H]
         col_down = Wd.pow(2).sum(dim=0).sqrt()                   # [I]
 
         Wg_norm = Wg / col_gate[None, :]
