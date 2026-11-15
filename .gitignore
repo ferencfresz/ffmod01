@@ -1,0 +1,11 @@
+.venv/
+.hf_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+checkpoints/
+*.safetensors

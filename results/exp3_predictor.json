@@ -1,0 +1,538 @@
+{
+  "granularity": "channel_g1_12KB",
+  "overhead_stats": {
+    "ffn_weights_per_layer": 67633152,
+    "r64_router_weights": 846592,
+    "r64_overhead_fraction": 0.012517411579457365,
+    "r128_router_weights": 1682176,
+    "r128_overhead_fraction": 0.024872062742248062
+  },
+  "modes": {
+    "static_norm": {
+      "label": "Static Input-Independent Top Channels",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.7,
+          "mean_kl": 0.49045446515083313,
+          "median_kl": 0.1740727573633194,
+          "top1_agreement": 0.7536231875419617,
+          "oracle_channel_recall": 0.7675776651336087,
+          "l1_contribution_captured": 0.8158084034091897
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.6,
+          "mean_kl": 0.8882923722267151,
+          "median_kl": 0.3641357123851776,
+          "top1_agreement": 0.6739130616188049,
+          "oracle_channel_recall": 0.6897638506359525,
+          "l1_contribution_captured": 0.7426099321908421
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.5,
+          "mean_kl": 1.2830911874771118,
+          "median_kl": 0.6558997631072998,
+          "top1_agreement": 0.5724637508392334,
+          "oracle_channel_recall": 0.61302608375748,
+          "l1_contribution_captured": 0.6644054663678011
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.4,
+          "mean_kl": 1.6952738761901855,
+          "median_kl": 1.0498604774475098,
+          "top1_agreement": 0.5144927501678467,
+          "oracle_channel_recall": 0.5394160406043133,
+          "l1_contribution_captured": 0.580292590169443
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.3,
+          "mean_kl": 2.329801321029663,
+          "median_kl": 1.5682218074798584,
+          "top1_agreement": 0.4057970941066742,
+          "oracle_channel_recall": 0.4556904226127598,
+          "l1_contribution_captured": 0.4824109429286586
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.25,
+          "mean_kl": 2.7832870483398438,
+          "median_kl": 2.053250312805176,
+          "top1_agreement": 0.3007246255874634,
+          "oracle_channel_recall": 0.41440507686800426,
+          "l1_contribution_captured": 0.42988508339557385
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.2,
+          "mean_kl": 3.4719769954681396,
+          "median_kl": 2.7514548301696777,
+          "top1_agreement": 0.27173912525177,
+          "oracle_channel_recall": 0.3743585081150134,
+          "l1_contribution_captured": 0.3733889835162295
+        }
+      ]
+    },
+    "gate_svd_zero_data": {
+      "label": "Zero-Data Static Gate SVD Index (r=128, 2.47% cost)",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.7247,
+          "mean_kl": 1.8457279205322266,
+          "median_kl": 0.7354687452316284,
+          "top1_agreement": 0.5362318754196167,
+          "oracle_channel_recall": 0.7423537427352535,
+          "l1_contribution_captured": 0.7921445696718163
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.6247,
+          "mean_kl": 2.3097448348999023,
+          "median_kl": 1.4173280000686646,
+          "top1_agreement": 0.4166666567325592,
+          "oracle_channel_recall": 0.6650664100630416,
+          "l1_contribution_captured": 0.7202874960170852
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.5247,
+          "mean_kl": 2.569201707839966,
+          "median_kl": 1.813276767730713,
+          "top1_agreement": 0.38768115639686584,
+          "oracle_channel_recall": 0.5963444960200124,
+          "l1_contribution_captured": 0.6455421008997493
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.4247,
+          "mean_kl": 3.0340421199798584,
+          "median_kl": 2.567880153656006,
+          "top1_agreement": 0.35144928097724915,
+          "oracle_channel_recall": 0.5312513003332747,
+          "l1_contribution_captured": 0.5664778699477514
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.3247,
+          "mean_kl": 3.7127251625061035,
+          "median_kl": 3.3010284900665283,
+          "top1_agreement": 0.25,
+          "oracle_channel_recall": 0.4520379149665435,
+          "l1_contribution_captured": 0.4761887128568358
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.2747,
+          "mean_kl": 3.9283804893493652,
+          "median_kl": 3.5061428546905518,
+          "top1_agreement": 0.23550724983215332,
+          "oracle_channel_recall": 0.4144560353209575,
+          "l1_contribution_captured": 0.42792507550782627
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.2247,
+          "mean_kl": 4.237703800201416,
+          "median_kl": 3.97165846824646,
+          "top1_agreement": 0.21014492213726044,
+          "oracle_channel_recall": 0.37421402480039334,
+          "l1_contribution_captured": 0.37361784237954354
+        }
+      ]
+    },
+    "prefetch_r128": {
+      "label": "Pre-Attention Prefetch Router (r=128, 2.47% cost)",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.7247,
+          "mean_kl": 0.25095319747924805,
+          "median_kl": 0.05306360870599747,
+          "top1_agreement": 0.8297101259231567,
+          "oracle_channel_recall": 0.7808382556670241,
+          "l1_contribution_captured": 0.8453929440842735
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.6247,
+          "mean_kl": 0.32937830686569214,
+          "median_kl": 0.07715705782175064,
+          "top1_agreement": 0.7898550629615784,
+          "oracle_channel_recall": 0.7104180252386464,
+          "l1_contribution_captured": 0.7796364683243964
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.5247,
+          "mean_kl": 0.4889395236968994,
+          "median_kl": 0.1751062273979187,
+          "top1_agreement": 0.7318840622901917,
+          "oracle_channel_recall": 0.6412627746661504,
+          "l1_contribution_captured": 0.7061196354528269
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.4247,
+          "mean_kl": 0.8242591619491577,
+          "median_kl": 0.29300960898399353,
+          "top1_agreement": 0.6775362491607666,
+          "oracle_channel_recall": 0.57409760935439,
+          "l1_contribution_captured": 0.6239990329162942
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.3247,
+          "mean_kl": 1.1891402006149292,
+          "median_kl": 0.4968879222869873,
+          "top1_agreement": 0.6195651888847351,
+          "oracle_channel_recall": 0.5025321087903447,
+          "l1_contribution_captured": 0.531260816173421
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.2747,
+          "mean_kl": 1.3366937637329102,
+          "median_kl": 0.625709056854248,
+          "top1_agreement": 0.5760869383811951,
+          "oracle_channel_recall": 0.46842268999252057,
+          "l1_contribution_captured": 0.480178772782286
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.2247,
+          "mean_kl": 1.775266408920288,
+          "median_kl": 0.8664515614509583,
+          "top1_agreement": 0.5289855003356934,
+          "oracle_channel_recall": 0.43409929797053337,
+          "l1_contribution_captured": 0.4232720343603028
+        }
+      ]
+    },
+    "mlp_router_r64": {
+      "label": "MLP-Input Low-Rank Router (r=64, 1.23% cost)",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.7124,
+          "mean_kl": 0.2362924963235855,
+          "median_kl": 0.05832860618829727,
+          "top1_agreement": 0.8550724387168884,
+          "oracle_channel_recall": 0.7809382321106063,
+          "l1_contribution_captured": 0.8426394764747884
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.6124,
+          "mean_kl": 0.33651629090309143,
+          "median_kl": 0.0921601951122284,
+          "top1_agreement": 0.804347813129425,
+          "oracle_channel_recall": 0.7106610168185499,
+          "l1_contribution_captured": 0.775722646050983
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.5124,
+          "mean_kl": 0.5068355798721313,
+          "median_kl": 0.1627977192401886,
+          "top1_agreement": 0.7644927501678467,
+          "oracle_channel_recall": 0.6408839279578792,
+          "l1_contribution_captured": 0.7019017015894254
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.4124,
+          "mean_kl": 0.755801796913147,
+          "median_kl": 0.22914808988571167,
+          "top1_agreement": 0.6847826242446899,
+          "oracle_channel_recall": 0.5737903118133545,
+          "l1_contribution_captured": 0.620300278895431
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.3124,
+          "mean_kl": 1.294888973236084,
+          "median_kl": 0.5696543455123901,
+          "top1_agreement": 0.5942028760910034,
+          "oracle_channel_recall": 0.49841941085954505,
+          "l1_contribution_captured": 0.5254979371610615
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.2624,
+          "mean_kl": 1.6052906513214111,
+          "median_kl": 0.8013127446174622,
+          "top1_agreement": 0.5181159377098083,
+          "oracle_channel_recall": 0.461072548189097,
+          "l1_contribution_captured": 0.4729232483853896
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.2124,
+          "mean_kl": 2.0996341705322266,
+          "median_kl": 1.1206883192062378,
+          "top1_agreement": 0.46739131212234497,
+          "oracle_channel_recall": 0.4244239055034187,
+          "l1_contribution_captured": 0.41542620211839676
+        }
+      ]
+    },
+    "mlp_router_r128": {
+      "label": "MLP-Input Low-Rank Router (r=128, 2.47% cost)",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.7247,
+          "mean_kl": 0.2510109841823578,
+          "median_kl": 0.05044551193714142,
+          "top1_agreement": 0.8442028760910034,
+          "oracle_channel_recall": 0.7838988970551226,
+          "l1_contribution_captured": 0.845752695782317
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.6247,
+          "mean_kl": 0.3131104111671448,
+          "median_kl": 0.07135932147502899,
+          "top1_agreement": 0.8007246255874634,
+          "oracle_channel_recall": 0.7148810517456796,
+          "l1_contribution_captured": 0.7793843129442798
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.5247,
+          "mean_kl": 0.5571582317352295,
+          "median_kl": 0.16893844306468964,
+          "top1_agreement": 0.7427536249160767,
+          "oracle_channel_recall": 0.6467348887688584,
+          "l1_contribution_captured": 0.7062842158807648
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.4247,
+          "mean_kl": 0.9400218725204468,
+          "median_kl": 0.3211795389652252,
+          "top1_agreement": 0.6739130616188049,
+          "oracle_channel_recall": 0.5791536341938708,
+          "l1_contribution_captured": 0.6236526471459203
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.3247,
+          "mean_kl": 1.2830814123153687,
+          "median_kl": 0.5487664341926575,
+          "top1_agreement": 0.5978260636329651,
+          "oracle_channel_recall": 0.5045577476008071,
+          "l1_contribution_captured": 0.529906978416774
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.2747,
+          "mean_kl": 1.505846381187439,
+          "median_kl": 0.657520055770874,
+          "top1_agreement": 0.5398550629615784,
+          "oracle_channel_recall": 0.469401100029548,
+          "l1_contribution_captured": 0.47877317460046875
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.2247,
+          "mean_kl": 1.931580901145935,
+          "median_kl": 1.0534251928329468,
+          "top1_agreement": 0.4855072498321533,
+          "oracle_channel_recall": 0.43116949933270615,
+          "l1_contribution_captured": 0.4203783209539122
+        }
+      ]
+    },
+    "gate_exact_2stage": {
+      "label": "Two-Stage Exact Gate -> Sparse Up/Down (0% extra params)",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.8,
+          "mean_kl": 0.08276858180761337,
+          "median_kl": 0.02508399821817875,
+          "top1_agreement": 0.9130434989929199,
+          "oracle_channel_recall": 0.8222263496783044,
+          "l1_contribution_captured": 0.9126764167514112
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.7333,
+          "mean_kl": 0.22300510108470917,
+          "median_kl": 0.06948374211788177,
+          "top1_agreement": 0.8405796885490417,
+          "oracle_channel_recall": 0.7631622101697657,
+          "l1_contribution_captured": 0.8524606873591741
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.6667,
+          "mean_kl": 0.4463518261909485,
+          "median_kl": 0.16270163655281067,
+          "top1_agreement": 0.760869562625885,
+          "oracle_channel_recall": 0.7027778704133298,
+          "l1_contribution_captured": 0.7799011605481306
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.6,
+          "mean_kl": 0.7068027257919312,
+          "median_kl": 0.34770458936691284,
+          "top1_agreement": 0.7137681245803833,
+          "oracle_channel_recall": 0.6405963148507807,
+          "l1_contribution_captured": 0.696035531659921
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.5333,
+          "mean_kl": 1.140393614768982,
+          "median_kl": 0.6040910482406616,
+          "top1_agreement": 0.6304348111152649,
+          "oracle_channel_recall": 0.5777902383771207,
+          "l1_contribution_captured": 0.6044097989797592
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.5,
+          "mean_kl": 1.6204454898834229,
+          "median_kl": 0.9773577451705933,
+          "top1_agreement": 0.5144927501678467,
+          "oracle_channel_recall": 0.5539043311857514,
+          "l1_contribution_captured": 0.5562130539781518
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.4667,
+          "mean_kl": 2.665433168411255,
+          "median_kl": 1.8152199983596802,
+          "top1_agreement": 0.4057970941066742,
+          "oracle_channel_recall": 0.5391660930795802,
+          "l1_contribution_captured": 0.5059663268427054
+        }
+      ]
+    },
+    "oracle": {
+      "label": "Post-Hoc Exact Channel Oracle (Upper Bound)",
+      "metrics": [
+        {
+          "sparsity": 0.3,
+          "active_channel_fraction": 0.7,
+          "effective_ffn_memory_read_fraction": 0.7,
+          "mean_kl": 0.005919754970818758,
+          "median_kl": 0.0016893226420506835,
+          "top1_agreement": 0.97826087474823,
+          "oracle_channel_recall": 1.0,
+          "l1_contribution_captured": 0.9690238001445929
+        },
+        {
+          "sparsity": 0.4,
+          "active_channel_fraction": 0.6,
+          "effective_ffn_memory_read_fraction": 0.6,
+          "mean_kl": 0.014203355647623539,
+          "median_kl": 0.003729891497641802,
+          "top1_agreement": 0.9637681245803833,
+          "oracle_channel_recall": 1.0,
+          "l1_contribution_captured": 0.9393990023268594
+        },
+        {
+          "sparsity": 0.5,
+          "active_channel_fraction": 0.5,
+          "effective_ffn_memory_read_fraction": 0.5,
+          "mean_kl": 0.028852349147200584,
+          "median_kl": 0.006697934120893478,
+          "top1_agreement": 0.9420289993286133,
+          "oracle_channel_recall": 1.0,
+          "l1_contribution_captured": 0.896286683777968
+        },
+        {
+          "sparsity": 0.6,
+          "active_channel_fraction": 0.4,
+          "effective_ffn_memory_read_fraction": 0.4,
+          "mean_kl": 0.07800301164388657,
+          "median_kl": 0.014463172294199467,
+          "top1_agreement": 0.8985507488250732,
+          "oracle_channel_recall": 0.999999925494194,
+          "l1_contribution_captured": 0.8363393487201797
+        },
+        {
+          "sparsity": 0.7,
+          "active_channel_fraction": 0.3,
+          "effective_ffn_memory_read_fraction": 0.3,
+          "mean_kl": 0.157150536775589,
+          "median_kl": 0.040944162756204605,
+          "top1_agreement": 0.8731883764266968,
+          "oracle_channel_recall": 0.999999925494194,
+          "l1_contribution_captured": 0.7541482378211286
+        },
+        {
+          "sparsity": 0.75,
+          "active_channel_fraction": 0.25,
+          "effective_ffn_memory_read_fraction": 0.25,
+          "mean_kl": 0.23139448463916779,
+          "median_kl": 0.05460825562477112,
+          "top1_agreement": 0.8333333134651184,
+          "oracle_channel_recall": 1.0,
+          "l1_contribution_captured": 0.7016881344219049
+        },
+        {
+          "sparsity": 0.8,
+          "active_channel_fraction": 0.2,
+          "effective_ffn_memory_read_fraction": 0.2,
+          "mean_kl": 0.362920343875885,
+          "median_kl": 0.09602487832307816,
+          "top1_agreement": 0.7898550629615784,
+          "oracle_channel_recall": 1.0,
+          "l1_contribution_captured": 0.639418521275123
+        }
+      ]
+    }
+  },
+  "elapsed_sec": 47.97
+}

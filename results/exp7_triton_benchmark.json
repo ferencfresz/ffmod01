@@ -1,0 +1,581 @@
+{
+  "gpu_info": {
+    "name": "NVIDIA GeForce RTX 5090 Laptop GPU",
+    "compute_capability": "12.0",
+    "num_sms": 82,
+    "total_vram_gb": 25.15,
+    "pytorch_version": "2.15.0+cu132",
+    "triton_version": "3.9.0"
+  },
+  "vram_36layers_indexed_gb": 7.111,
+  "sanity_s0_exact_match": {
+    "cosine_similarity": 0.9999925,
+    "max_bf16_abs_diff": 0.015625
+  },
+  "mlp_36layer_cold_benchmark": {
+    "qwen2_mlp": {
+      "eager_us_per_layer": 199.77,
+      "cuda_graph_us_per_layer": 197.65,
+      "effective_dram_bw_gbps": 684.4
+    },
+    "fused_cublas_mlp": {
+      "eager_us_per_layer": 196.59,
+      "cuda_graph_us_per_layer": 196.11,
+      "effective_dram_bw_gbps": 689.8
+    },
+    "triton_sparse": {
+      "coord_d_768": [
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.4,
+          "active_channels": 6605,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 33.75,
+          "eager_us_per_layer": 147.41,
+          "cuda_graph_us_per_layer": 146.4,
+          "effective_dram_bw_gbps": 612.2,
+          "speedup_vs_qwen_mlp_graph": 1.35,
+          "speedup_vs_fused_cublas_graph": 1.34,
+          "speedup_vs_qwen_mlp_eager": 1.355
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.5,
+          "active_channels": 5504,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 43.75,
+          "eager_us_per_layer": 130.13,
+          "cuda_graph_us_per_layer": 129.09,
+          "effective_dram_bw_gbps": 589.4,
+          "speedup_vs_qwen_mlp_graph": 1.531,
+          "speedup_vs_fused_cublas_graph": 1.519,
+          "speedup_vs_qwen_mlp_eager": 1.535
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.55,
+          "active_channels": 4954,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 48.75,
+          "eager_us_per_layer": 119.29,
+          "cuda_graph_us_per_layer": 118.27,
+          "effective_dram_bw_gbps": 586.2,
+          "speedup_vs_qwen_mlp_graph": 1.671,
+          "speedup_vs_fused_cublas_graph": 1.658,
+          "speedup_vs_qwen_mlp_eager": 1.675
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.6,
+          "active_channels": 4403,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 53.75,
+          "eager_us_per_layer": 109.24,
+          "cuda_graph_us_per_layer": 108.2,
+          "effective_dram_bw_gbps": 578.2,
+          "speedup_vs_qwen_mlp_graph": 1.827,
+          "speedup_vs_fused_cublas_graph": 1.812,
+          "speedup_vs_qwen_mlp_eager": 1.829
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.65,
+          "active_channels": 3853,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 58.75,
+          "eager_us_per_layer": 98.83,
+          "cuda_graph_us_per_layer": 98.0,
+          "effective_dram_bw_gbps": 569.4,
+          "speedup_vs_qwen_mlp_graph": 2.017,
+          "speedup_vs_fused_cublas_graph": 2.001,
+          "speedup_vs_qwen_mlp_eager": 2.021
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.7,
+          "active_channels": 3302,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 63.75,
+          "eager_us_per_layer": 89.13,
+          "cuda_graph_us_per_layer": 88.13,
+          "effective_dram_bw_gbps": 556.3,
+          "speedup_vs_qwen_mlp_graph": 2.243,
+          "speedup_vs_fused_cublas_graph": 2.225,
+          "speedup_vs_qwen_mlp_eager": 2.241
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.75,
+          "active_channels": 2752,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 68.75,
+          "eager_us_per_layer": 79.61,
+          "cuda_graph_us_per_layer": 78.84,
+          "effective_dram_bw_gbps": 536.2,
+          "speedup_vs_qwen_mlp_graph": 2.507,
+          "speedup_vs_fused_cublas_graph": 2.488,
+          "speedup_vs_qwen_mlp_eager": 2.509
+        },
+        {
+          "coord_d": 768,
+          "channel_sparsity": 0.8,
+          "active_channels": 2202,
+          "index_overhead_pct": 6.25,
+          "net_dram_bytes_saved_pct": 73.75,
+          "eager_us_per_layer": 70.73,
+          "cuda_graph_us_per_layer": 70.18,
+          "effective_dram_bw_gbps": 506.0,
+          "speedup_vs_qwen_mlp_graph": 2.816,
+          "speedup_vs_fused_cublas_graph": 2.794,
+          "speedup_vs_qwen_mlp_eager": 2.824
+        }
+      ],
+      "coord_d_512": [
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.4,
+          "active_channels": 6605,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 35.83,
+          "eager_us_per_layer": 143.42,
+          "cuda_graph_us_per_layer": 142.43,
+          "effective_dram_bw_gbps": 609.4,
+          "speedup_vs_qwen_mlp_graph": 1.388,
+          "speedup_vs_fused_cublas_graph": 1.377,
+          "speedup_vs_qwen_mlp_eager": 1.393
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.5,
+          "active_channels": 5504,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 45.83,
+          "eager_us_per_layer": 125.68,
+          "cuda_graph_us_per_layer": 124.81,
+          "effective_dram_bw_gbps": 587.1,
+          "speedup_vs_qwen_mlp_graph": 1.584,
+          "speedup_vs_fused_cublas_graph": 1.571,
+          "speedup_vs_qwen_mlp_eager": 1.59
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.55,
+          "active_channels": 4954,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 50.83,
+          "eager_us_per_layer": 114.39,
+          "cuda_graph_us_per_layer": 113.33,
+          "effective_dram_bw_gbps": 586.9,
+          "speedup_vs_qwen_mlp_graph": 1.744,
+          "speedup_vs_fused_cublas_graph": 1.73,
+          "speedup_vs_qwen_mlp_eager": 1.746
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.6,
+          "active_channels": 4403,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 55.84,
+          "eager_us_per_layer": 104.09,
+          "cuda_graph_us_per_layer": 103.11,
+          "effective_dram_bw_gbps": 579.4,
+          "speedup_vs_qwen_mlp_graph": 1.917,
+          "speedup_vs_fused_cublas_graph": 1.902,
+          "speedup_vs_qwen_mlp_eager": 1.919
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.65,
+          "active_channels": 3853,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 60.83,
+          "eager_us_per_layer": 93.92,
+          "cuda_graph_us_per_layer": 92.98,
+          "effective_dram_bw_gbps": 569.8,
+          "speedup_vs_qwen_mlp_graph": 2.126,
+          "speedup_vs_fused_cublas_graph": 2.109,
+          "speedup_vs_qwen_mlp_eager": 2.127
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.7,
+          "active_channels": 3302,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 65.84,
+          "eager_us_per_layer": 84.17,
+          "cuda_graph_us_per_layer": 83.39,
+          "effective_dram_bw_gbps": 554.2,
+          "speedup_vs_qwen_mlp_graph": 2.37,
+          "speedup_vs_fused_cublas_graph": 2.352,
+          "speedup_vs_qwen_mlp_eager": 2.373
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.75,
+          "active_channels": 2752,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 70.83,
+          "eager_us_per_layer": 75.38,
+          "cuda_graph_us_per_layer": 74.47,
+          "effective_dram_bw_gbps": 529.8,
+          "speedup_vs_qwen_mlp_graph": 2.654,
+          "speedup_vs_fused_cublas_graph": 2.633,
+          "speedup_vs_qwen_mlp_eager": 2.65
+        },
+        {
+          "coord_d": 512,
+          "channel_sparsity": 0.8,
+          "active_channels": 2202,
+          "index_overhead_pct": 4.17,
+          "net_dram_bytes_saved_pct": 75.83,
+          "eager_us_per_layer": 66.37,
+          "cuda_graph_us_per_layer": 65.82,
+          "effective_dram_bw_gbps": 496.7,
+          "speedup_vs_qwen_mlp_graph": 3.003,
+          "speedup_vs_fused_cublas_graph": 2.979,
+          "speedup_vs_qwen_mlp_eager": 3.01
+        }
+      ]
+    }
+  },
+  "per_kernel_breakdown_us": {
+    "d768_s65": {
+      "k1_prologue_select_x_us": 9.29,
+      "k2_2d_int4_scan_us": 14.18,
+      "k3_reduce_select_ch_us": 13.27,
+      "k4_fused_sparse_ffn_us": 61.51,
+      "sum_us": 98.25
+    },
+    "d512_s65": {
+      "k1_prologue_select_x_us": 8.54,
+      "k2_2d_int4_scan_us": 10.47,
+      "k3_reduce_select_ch_us": 13.23,
+      "k4_fused_sparse_ffn_us": 61.58,
+      "sum_us": 93.82
+    }
+  },
+  "triton_accuracy_pareto": {
+    "d768_zerodata": [
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.5,
+        "net_dram_bytes_saved_pct": 43.75,
+        "cuda_graph_us_per_layer": 129.09,
+        "speedup_vs_qwen_mlp": 1.531,
+        "speedup_vs_fused_cublas": 1.519,
+        "mean_kl": 0.0938,
+        "median_kl": 0.0262,
+        "top1_agreement": 0.913,
+        "category_top1": {
+          "factual": 0.8378,
+          "reasoning": 0.971,
+          "code": 0.978,
+          "hungarian": 0.8228
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.6,
+        "net_dram_bytes_saved_pct": 53.75,
+        "cuda_graph_us_per_layer": 108.2,
+        "speedup_vs_qwen_mlp": 1.827,
+        "speedup_vs_fused_cublas": 1.812,
+        "mean_kl": 0.1576,
+        "median_kl": 0.0428,
+        "top1_agreement": 0.8551,
+        "category_top1": {
+          "factual": 0.8108,
+          "reasoning": 0.913,
+          "code": 0.9451,
+          "hungarian": 0.7215
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.65,
+        "net_dram_bytes_saved_pct": 58.75,
+        "cuda_graph_us_per_layer": 98.0,
+        "speedup_vs_qwen_mlp": 2.017,
+        "speedup_vs_fused_cublas": 2.001,
+        "mean_kl": 0.223,
+        "median_kl": 0.054,
+        "top1_agreement": 0.8804,
+        "category_top1": {
+          "factual": 0.8649,
+          "reasoning": 0.8696,
+          "code": 0.989,
+          "hungarian": 0.7722
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.7,
+        "net_dram_bytes_saved_pct": 63.75,
+        "cuda_graph_us_per_layer": 88.13,
+        "speedup_vs_qwen_mlp": 2.243,
+        "speedup_vs_fused_cublas": 2.225,
+        "mean_kl": 0.3372,
+        "median_kl": 0.0815,
+        "top1_agreement": 0.8007,
+        "category_top1": {
+          "factual": 0.7568,
+          "reasoning": 0.8406,
+          "code": 0.967,
+          "hungarian": 0.5949
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.75,
+        "net_dram_bytes_saved_pct": 68.75,
+        "cuda_graph_us_per_layer": 78.84,
+        "speedup_vs_qwen_mlp": 2.507,
+        "speedup_vs_fused_cublas": 2.488,
+        "mean_kl": 0.4285,
+        "median_kl": 0.1013,
+        "top1_agreement": 0.7536,
+        "category_top1": {
+          "factual": 0.7027,
+          "reasoning": 0.8116,
+          "code": 0.9341,
+          "hungarian": 0.519
+        }
+      }
+    ],
+    "d768_zbar": [
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.5,
+        "net_dram_bytes_saved_pct": 43.75,
+        "cuda_graph_us_per_layer": 129.09,
+        "speedup_vs_qwen_mlp": 1.531,
+        "speedup_vs_fused_cublas": 1.519,
+        "mean_kl": 0.1532,
+        "median_kl": 0.0514,
+        "top1_agreement": 0.8514,
+        "category_top1": {
+          "factual": 0.7568,
+          "reasoning": 0.8551,
+          "code": 0.956,
+          "hungarian": 0.7722
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.6,
+        "net_dram_bytes_saved_pct": 53.75,
+        "cuda_graph_us_per_layer": 108.2,
+        "speedup_vs_qwen_mlp": 1.827,
+        "speedup_vs_fused_cublas": 1.812,
+        "mean_kl": 0.232,
+        "median_kl": 0.0649,
+        "top1_agreement": 0.8297,
+        "category_top1": {
+          "factual": 0.7568,
+          "reasoning": 0.8551,
+          "code": 0.9451,
+          "hungarian": 0.7089
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.65,
+        "net_dram_bytes_saved_pct": 58.75,
+        "cuda_graph_us_per_layer": 98.0,
+        "speedup_vs_qwen_mlp": 2.017,
+        "speedup_vs_fused_cublas": 2.001,
+        "mean_kl": 0.2627,
+        "median_kl": 0.0883,
+        "top1_agreement": 0.8297,
+        "category_top1": {
+          "factual": 0.7838,
+          "reasoning": 0.8696,
+          "code": 0.9341,
+          "hungarian": 0.6962
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.7,
+        "net_dram_bytes_saved_pct": 63.75,
+        "cuda_graph_us_per_layer": 88.13,
+        "speedup_vs_qwen_mlp": 2.243,
+        "speedup_vs_fused_cublas": 2.225,
+        "mean_kl": 0.3573,
+        "median_kl": 0.1294,
+        "top1_agreement": 0.7935,
+        "category_top1": {
+          "factual": 0.7568,
+          "reasoning": 0.8116,
+          "code": 0.9231,
+          "hungarian": 0.6456
+        }
+      },
+      {
+        "coord_d": 768,
+        "channel_sparsity": 0.75,
+        "net_dram_bytes_saved_pct": 68.75,
+        "cuda_graph_us_per_layer": 78.84,
+        "speedup_vs_qwen_mlp": 2.507,
+        "speedup_vs_fused_cublas": 2.488,
+        "mean_kl": 0.4537,
+        "median_kl": 0.1532,
+        "top1_agreement": 0.7754,
+        "category_top1": {
+          "factual": 0.6486,
+          "reasoning": 0.8406,
+          "code": 0.9231,
+          "hungarian": 0.6076
+        }
+      }
+    ],
+    "d512_zerodata": [
+      {
+        "coord_d": 512,
+        "channel_sparsity": 0.5,
+        "net_dram_bytes_saved_pct": 45.83,
+        "cuda_graph_us_per_layer": 124.81,
+        "speedup_vs_qwen_mlp": 1.584,
+        "speedup_vs_fused_cublas": 1.571,
+        "mean_kl": 0.2115,
+        "median_kl": 0.0507,
+        "top1_agreement": 0.8261,
+        "category_top1": {
+          "factual": 0.7297,
+          "reasoning": 0.8986,
+          "code": 0.956,
+          "hungarian": 0.6582
+        }
+      },
+      {
+        "coord_d": 512,
+        "channel_sparsity": 0.6,
+        "net_dram_bytes_saved_pct": 55.84,
+        "cuda_graph_us_per_layer": 103.11,
+        "speedup_vs_qwen_mlp": 1.917,
+        "speedup_vs_fused_cublas": 1.902,
+        "mean_kl": 0.3001,
+        "median_kl": 0.0712,
+        "top1_agreement": 0.837,
+        "category_top1": {
+          "factual": 0.7568,
+          "reasoning": 0.8986,
+          "code": 0.989,
+          "hungarian": 0.6456
+        }
+      },
+      {
+        "coord_d": 512,
+        "channel_sparsity": 0.65,
+        "net_dram_bytes_saved_pct": 60.83,
+        "cuda_graph_us_per_layer": 92.98,
+        "speedup_vs_qwen_mlp": 2.126,
+        "speedup_vs_fused_cublas": 2.109,
+        "mean_kl": 0.366,
+        "median_kl": 0.1172,
+        "top1_agreement": 0.779,
+        "category_top1": {
+          "factual": 0.8108,
+          "reasoning": 0.7971,
+          "code": 0.9121,
+          "hungarian": 0.5949
+        }
+      },
+      {
+        "coord_d": 512,
+        "channel_sparsity": 0.7,
+        "net_dram_bytes_saved_pct": 65.84,
+        "cuda_graph_us_per_layer": 83.39,
+        "speedup_vs_qwen_mlp": 2.37,
+        "speedup_vs_fused_cublas": 2.352,
+        "mean_kl": 0.4709,
+        "median_kl": 0.1642,
+        "top1_agreement": 0.7391,
+        "category_top1": {
+          "factual": 0.7027,
+          "reasoning": 0.7681,
+          "code": 0.9341,
+          "hungarian": 0.5063
+        }
+      },
+      {
+        "coord_d": 512,
+        "channel_sparsity": 0.75,
+        "net_dram_bytes_saved_pct": 70.83,
+        "cuda_graph_us_per_layer": 74.47,
+        "speedup_vs_qwen_mlp": 2.654,
+        "speedup_vs_fused_cublas": 2.633,
+        "mean_kl": 0.6241,
+        "median_kl": 0.217,
+        "top1_agreement": 0.6884,
+        "category_top1": {
+          "factual": 0.6757,
+          "reasoning": 0.7246,
+          "code": 0.8791,
+          "hungarian": 0.443
+        }
+      }
+    ]
+  },
+  "end_to_end_qwen25_3b_decode": {
+    "qwen2_mlp": {
+      "ms_per_token": 10.939,
+      "tokens_per_sec": 91.41,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM"
+    },
+    "fused_cublas_mlp": {
+      "ms_per_token": 10.918,
+      "tokens_per_sec": 91.59,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM"
+    },
+    "triton_d768_s60": {
+      "ms_per_token": 7.908,
+      "tokens_per_sec": 126.46,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and the GPU. It is a critical factor in determining the speed of data transfer, which is essential for LLM inference.\n2. In LLM inference,",
+      "speedup_vs_qwen_mlp": 1.383,
+      "speedup_vs_fused_cublas": 1.381
+    },
+    "triton_d768_s65": {
+      "ms_per_token": 7.515,
+      "tokens_per_sec": 133.08,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and GPU, while compute FLOPs is the rate at which the GPU can perform mathematical operations.\n2. In LLM inference, the bottleneck is often the",
+      "speedup_vs_qwen_mlp": 1.456,
+      "speedup_vs_fused_cublas": 1.453
+    },
+    "triton_d512_s65": {
+      "ms_per_token": 7.353,
+      "tokens_per_sec": 136.0,
+      "sample_text": "1. Memory bandwidth is the primary constraint in LLM inference, as it determines the rate at which data can be transferred between the CPU and GPU.\n2. The size of the input data and the number of tokens processed in a single batch",
+      "speedup_vs_qwen_mlp": 1.488,
+      "speedup_vs_fused_cublas": 1.485
+    },
+    "triton_d512_s70": {
+      "ms_per_token": 7.018,
+      "tokens_per_sec": 142.49,
+      "sample_text": "1. Memory bandwidth is the rate at which data can be transferred in and out of the memory system.\n2. In contrast, compute FLOPs refers to the number of floating-point arithmetic operations that can be performed by the hardware in a",
+      "speedup_vs_qwen_mlp": 1.559,
+      "speedup_vs_fused_cublas": 1.556
+    }
+  },
+  "qualitative_generations_d768_s65": [
+    {
+      "id": "gen_0",
+      "prompt": "Explain concisely why memory bandwidth, rather than compute FLOPs, bottlenecks single-batch LLM inference:\n",
+      "dense_continuation": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM",
+      "triton_d768_s65_continuation": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and GPU, while compute FLOPs refer to the number of floating-point operations that can be performed by the GPU.\n2. In LLM inference, the"
+    },
+    {
+      "id": "gen_1",
+      "prompt": "def merge_two_sorted_lists(a: list[int], b: list[int]) -> list[int]:\n",
+      "dense_continuation": "    \"\"\"\n    Merge two sorted lists into a single sorted list.\n    \n    This function takes two sorted lists (ascending order) and merges them into a single sorted list.\n    The original lists are not modified. The function works by comparing the",
+      "triton_d768_s65_continuation": "    \"\"\"\n    Merges two sorted lists into a single sorted list.\n    \n    :param a: A list of integers that is sorted.\n    :param b: A list of integers that is sorted.\n    :return: A new"
+    },
+    {
+      "id": "gen_2",
+      "prompt": "Problem: A rectangle has perimeter 36 cm and length twice its width. Find its area step by step.\nSolution:",
+      "dense_continuation": " Let the width be x cm. Then the length is 2x cm. The perimeter is 2(x + 2x) = 6x cm. We know that the perimeter is 36 cm, so 6x",
+      "triton_d768_s65_continuation": " Let x be the width of the rectangle. Then the length is 2x. The perimeter is 2(x + 2x) = 6x. So, 6x = 36. Therefore, x = "
+    }
+  ],
+  "elapsed_sec": 92.0
+}

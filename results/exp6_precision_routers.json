@@ -1,0 +1,850 @@
+{
+  "modes": {
+    "baseline_r64_mlp": {
+      "label": "Trained Rank-64 MLP Router + Mean Fix (1.25% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.3,
+          "index_overhead_pct": 1.24,
+          "net_ffn_memory_saved_strict_pct": 28.76,
+          "net_ffn_memory_saved_bitsplit_pct": 28.76,
+          "mean_kl": 0.227937713265419,
+          "median_kl": 0.05085616558790207,
+          "top1_agreement": 0.8659420013427734,
+          "oracle_channel_recall": 0.7823313677476512,
+          "l1_energy_captured": 0.8449924443331029,
+          "category_top1": {
+            "factual": 0.7837837934494019,
+            "reasoning": 0.8405796885490417,
+            "code": 0.9560439586639404,
+            "hungarian": 0.8227847814559937
+          }
+        },
+        {
+          "channel_sparsity": 0.4,
+          "index_overhead_pct": 1.24,
+          "net_ffn_memory_saved_strict_pct": 38.76,
+          "net_ffn_memory_saved_bitsplit_pct": 38.76,
+          "mean_kl": 0.33033427596092224,
+          "median_kl": 0.07866715639829636,
+          "top1_agreement": 0.8224637508392334,
+          "oracle_channel_recall": 0.7131907472179996,
+          "l1_energy_captured": 0.7795893599589666,
+          "category_top1": {
+            "factual": 0.7027027010917664,
+            "reasoning": 0.7971014380455017,
+            "code": 0.9340659379959106,
+            "hungarian": 0.7721518874168396
+          }
+        },
+        {
+          "channel_sparsity": 0.5,
+          "index_overhead_pct": 1.24,
+          "net_ffn_memory_saved_strict_pct": 48.76,
+          "net_ffn_memory_saved_bitsplit_pct": 48.76,
+          "mean_kl": 0.4499007761478424,
+          "median_kl": 0.11810509115457535,
+          "top1_agreement": 0.7862318754196167,
+          "oracle_channel_recall": 0.6451760931975312,
+          "l1_energy_captured": 0.7075767889618874,
+          "category_top1": {
+            "factual": 0.6486486196517944,
+            "reasoning": 0.739130437374115,
+            "code": 0.9230769276618958,
+            "hungarian": 0.7341772317886353
+          }
+        },
+        {
+          "channel_sparsity": 0.6,
+          "index_overhead_pct": 1.24,
+          "net_ffn_memory_saved_strict_pct": 58.76,
+          "net_ffn_memory_saved_bitsplit_pct": 58.76,
+          "mean_kl": 0.698527991771698,
+          "median_kl": 0.24603885412216187,
+          "top1_agreement": 0.6992753744125366,
+          "oracle_channel_recall": 0.5796103996949064,
+          "l1_energy_captured": 0.6280528919564353,
+          "category_top1": {
+            "factual": 0.5675675868988037,
+            "reasoning": 0.695652186870575,
+            "code": 0.8791208863258362,
+            "hungarian": 0.5569620132446289
+          }
+        },
+        {
+          "channel_sparsity": 0.7,
+          "index_overhead_pct": 1.24,
+          "net_ffn_memory_saved_strict_pct": 68.76,
+          "net_ffn_memory_saved_bitsplit_pct": 68.76,
+          "mean_kl": 1.0381686687469482,
+          "median_kl": 0.47441357374191284,
+          "top1_agreement": 0.6159420013427734,
+          "oracle_channel_recall": 0.5084955781284306,
+          "l1_energy_captured": 0.5374724242008395,
+          "category_top1": {
+            "factual": 0.45945945382118225,
+            "reasoning": 0.6376811861991882,
+            "code": 0.8241758346557617,
+            "hungarian": 0.4303797483444214
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 1.24,
+          "net_ffn_memory_saved_strict_pct": 73.76,
+          "net_ffn_memory_saved_bitsplit_pct": 73.76,
+          "mean_kl": 1.3132230043411255,
+          "median_kl": 0.5524598360061646,
+          "top1_agreement": 0.5615941882133484,
+          "oracle_channel_recall": 0.47425991255376077,
+          "l1_energy_captured": 0.48657077302535373,
+          "category_top1": {
+            "factual": 0.37837839126586914,
+            "reasoning": 0.6086956262588501,
+            "code": 0.7582417726516724,
+            "hungarian": 0.37974682450294495
+          }
+        }
+      ]
+    },
+    "rabitq_1bit_full": {
+      "label": "Zero-Data 1-Bit Sign Index (4.21% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.35,
+          "index_overhead_pct": 4.2,
+          "net_ffn_memory_saved_strict_pct": 30.8,
+          "net_ffn_memory_saved_bitsplit_pct": 30.8,
+          "mean_kl": 0.387896329164505,
+          "median_kl": 0.08200886845588684,
+          "top1_agreement": 0.7898550629615784,
+          "oracle_channel_recall": 0.7484924010932446,
+          "l1_energy_captured": 0.7906783592059381,
+          "category_top1": {
+            "factual": 0.7297297120094299,
+            "reasoning": 0.8550724387168884,
+            "code": 0.9230769276618958,
+            "hungarian": 0.607594907283783
+          }
+        },
+        {
+          "channel_sparsity": 0.45,
+          "index_overhead_pct": 4.2,
+          "net_ffn_memory_saved_strict_pct": 40.8,
+          "net_ffn_memory_saved_bitsplit_pct": 40.8,
+          "mean_kl": 0.543143630027771,
+          "median_kl": 0.1389186829328537,
+          "top1_agreement": 0.7210144996643066,
+          "oracle_channel_recall": 0.6879500713613298,
+          "l1_energy_captured": 0.7267153148228923,
+          "category_top1": {
+            "factual": 0.5135135054588318,
+            "reasoning": 0.8695651888847351,
+            "code": 0.8681318759918213,
+            "hungarian": 0.5189873576164246
+          }
+        },
+        {
+          "channel_sparsity": 0.55,
+          "index_overhead_pct": 4.2,
+          "net_ffn_memory_saved_strict_pct": 50.8,
+          "net_ffn_memory_saved_bitsplit_pct": 50.8,
+          "mean_kl": 0.687373161315918,
+          "median_kl": 0.18964120745658875,
+          "top1_agreement": 0.72826087474823,
+          "oracle_channel_recall": 0.6314615495502949,
+          "l1_energy_captured": 0.6566326653895279,
+          "category_top1": {
+            "factual": 0.7027027010917664,
+            "reasoning": 0.782608687877655,
+            "code": 0.8681318759918213,
+            "hungarian": 0.5316455960273743
+          }
+        },
+        {
+          "channel_sparsity": 0.65,
+          "index_overhead_pct": 4.2,
+          "net_ffn_memory_saved_strict_pct": 60.8,
+          "net_ffn_memory_saved_bitsplit_pct": 60.8,
+          "mean_kl": 0.9834514260292053,
+          "median_kl": 0.25109776854515076,
+          "top1_agreement": 0.6521739363670349,
+          "oracle_channel_recall": 0.5763850665340821,
+          "l1_energy_captured": 0.5764199426242461,
+          "category_top1": {
+            "factual": 0.6486486196517944,
+            "reasoning": 0.7536231875419617,
+            "code": 0.8901098966598511,
+            "hungarian": 0.29113924503326416
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 4.2,
+          "net_ffn_memory_saved_strict_pct": 70.8,
+          "net_ffn_memory_saved_bitsplit_pct": 70.8,
+          "mean_kl": 1.5064210891723633,
+          "median_kl": 0.64387047290802,
+          "top1_agreement": 0.5724637508392334,
+          "oracle_channel_recall": 0.5116408461083969,
+          "l1_energy_captured": 0.4789206734858453,
+          "category_top1": {
+            "factual": 0.5945945978164673,
+            "reasoning": 0.6231883764266968,
+            "code": 0.8351648449897766,
+            "hungarian": 0.2151898741722107
+          }
+        },
+        {
+          "channel_sparsity": 0.8,
+          "index_overhead_pct": 4.2,
+          "net_ffn_memory_saved_strict_pct": 75.8,
+          "net_ffn_memory_saved_bitsplit_pct": 75.8,
+          "mean_kl": 2.0917460918426514,
+          "median_kl": 1.2651034593582153,
+          "top1_agreement": 0.47826087474823,
+          "oracle_channel_recall": 0.47467504100253183,
+          "l1_energy_captured": 0.4222388060556518,
+          "category_top1": {
+            "factual": 0.4864864945411682,
+            "reasoning": 0.52173912525177,
+            "code": 0.7692307829856873,
+            "hungarian": 0.10126582533121109
+          }
+        }
+      ]
+    },
+    "coord512_int4": {
+      "label": "Zero-Data Top-512 Coord + INT4 Index (4.30% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.35,
+          "index_overhead_pct": 4.3,
+          "net_ffn_memory_saved_strict_pct": 30.7,
+          "net_ffn_memory_saved_bitsplit_pct": 30.7,
+          "mean_kl": 0.08593759685754776,
+          "median_kl": 0.019144972786307335,
+          "top1_agreement": 0.9094203114509583,
+          "oracle_channel_recall": 0.80800486728549,
+          "l1_energy_captured": 0.8750568947030438,
+          "category_top1": {
+            "factual": 0.7837837934494019,
+            "reasoning": 0.9855072498321533,
+            "code": 0.9890109896659851,
+            "hungarian": 0.8101266026496887
+          }
+        },
+        {
+          "channel_sparsity": 0.45,
+          "index_overhead_pct": 4.3,
+          "net_ffn_memory_saved_strict_pct": 40.7,
+          "net_ffn_memory_saved_bitsplit_pct": 40.7,
+          "mean_kl": 0.17727933824062347,
+          "median_kl": 0.050652094185352325,
+          "top1_agreement": 0.8442028760910034,
+          "oracle_channel_recall": 0.7691275655395455,
+          "l1_energy_captured": 0.8247620239853859,
+          "category_top1": {
+            "factual": 0.8108108043670654,
+            "reasoning": 0.8550724387168884,
+            "code": 0.9670329689979553,
+            "hungarian": 0.7088607549667358
+          }
+        },
+        {
+          "channel_sparsity": 0.55,
+          "index_overhead_pct": 4.3,
+          "net_ffn_memory_saved_strict_pct": 50.7,
+          "net_ffn_memory_saved_bitsplit_pct": 50.7,
+          "mean_kl": 0.25228458642959595,
+          "median_kl": 0.07440979778766632,
+          "top1_agreement": 0.8333333134651184,
+          "oracle_channel_recall": 0.7354634325537417,
+          "l1_energy_captured": 0.7649446055293083,
+          "category_top1": {
+            "factual": 0.7567567825317383,
+            "reasoning": 0.8550724387168884,
+            "code": 0.9670329689979553,
+            "hungarian": 0.6962025165557861
+          }
+        },
+        {
+          "channel_sparsity": 0.65,
+          "index_overhead_pct": 4.3,
+          "net_ffn_memory_saved_strict_pct": 60.7,
+          "net_ffn_memory_saved_bitsplit_pct": 60.7,
+          "mean_kl": 0.3691810369491577,
+          "median_kl": 0.11052367836236954,
+          "top1_agreement": 0.77173912525177,
+          "oracle_channel_recall": 0.7005444082121054,
+          "l1_energy_captured": 0.6916343073050181,
+          "category_top1": {
+            "factual": 0.7297297120094299,
+            "reasoning": 0.782608687877655,
+            "code": 0.9340659379959106,
+            "hungarian": 0.594936728477478
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 4.3,
+          "net_ffn_memory_saved_strict_pct": 70.7,
+          "net_ffn_memory_saved_bitsplit_pct": 70.7,
+          "mean_kl": 0.6173445582389832,
+          "median_kl": 0.18999995291233063,
+          "top1_agreement": 0.72826087474823,
+          "oracle_channel_recall": 0.6602717604902055,
+          "l1_energy_captured": 0.5979773615383439,
+          "category_top1": {
+            "factual": 0.7027027010917664,
+            "reasoning": 0.7101449370384216,
+            "code": 0.9230769276618958,
+            "hungarian": 0.5316455960273743
+          }
+        },
+        {
+          "channel_sparsity": 0.8,
+          "index_overhead_pct": 4.3,
+          "net_ffn_memory_saved_strict_pct": 75.7,
+          "net_ffn_memory_saved_bitsplit_pct": 75.7,
+          "mean_kl": 0.8304181694984436,
+          "median_kl": 0.2539553940296173,
+          "top1_agreement": 0.6775362491607666,
+          "oracle_channel_recall": 0.6403388269245625,
+          "l1_energy_captured": 0.5414528865367174,
+          "category_top1": {
+            "factual": 0.5945945978164673,
+            "reasoning": 0.739130437374115,
+            "code": 0.9340659379959106,
+            "hungarian": 0.3670886158943176
+          }
+        }
+      ]
+    },
+    "coord768_int4": {
+      "label": "Zero-Data Top-768 Coord + INT4 Index (6.45% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.4,
+          "index_overhead_pct": 6.45,
+          "net_ffn_memory_saved_strict_pct": 33.55,
+          "net_ffn_memory_saved_bitsplit_pct": 33.55,
+          "mean_kl": 0.0582040511071682,
+          "median_kl": 0.017156273126602173,
+          "top1_agreement": 0.9202898740768433,
+          "oracle_channel_recall": 0.8301364609764682,
+          "l1_energy_captured": 0.8829063326120377,
+          "category_top1": {
+            "factual": 0.837837815284729,
+            "reasoning": 0.9855072498321533,
+            "code": 0.9670329689979553,
+            "hungarian": 0.8481012582778931
+          }
+        },
+        {
+          "channel_sparsity": 0.5,
+          "index_overhead_pct": 6.45,
+          "net_ffn_memory_saved_strict_pct": 43.55,
+          "net_ffn_memory_saved_bitsplit_pct": 43.55,
+          "mean_kl": 0.10163327306509018,
+          "median_kl": 0.02859753556549549,
+          "top1_agreement": 0.9094203114509583,
+          "oracle_channel_recall": 0.8067001977728473,
+          "l1_energy_captured": 0.8340858668088913,
+          "category_top1": {
+            "factual": 0.8108108043670654,
+            "reasoning": 0.9420289993286133,
+            "code": 0.9890109896659851,
+            "hungarian": 0.8354430198669434
+          }
+        },
+        {
+          "channel_sparsity": 0.6,
+          "index_overhead_pct": 6.45,
+          "net_ffn_memory_saved_strict_pct": 53.55,
+          "net_ffn_memory_saved_bitsplit_pct": 53.55,
+          "mean_kl": 0.19633391499519348,
+          "median_kl": 0.044034961611032486,
+          "top1_agreement": 0.8768116235733032,
+          "oracle_channel_recall": 0.7857262699140443,
+          "l1_energy_captured": 0.7719728416866727,
+          "category_top1": {
+            "factual": 0.8918918967247009,
+            "reasoning": 0.8695651888847351,
+            "code": 0.9780219793319702,
+            "hungarian": 0.7594936490058899
+          }
+        },
+        {
+          "channel_sparsity": 0.65,
+          "index_overhead_pct": 6.45,
+          "net_ffn_memory_saved_strict_pct": 58.55,
+          "net_ffn_memory_saved_bitsplit_pct": 58.55,
+          "mean_kl": 0.2429312765598297,
+          "median_kl": 0.054022353142499924,
+          "top1_agreement": 0.8405796885490417,
+          "oracle_channel_recall": 0.7721968297329214,
+          "l1_energy_captured": 0.734360453983148,
+          "category_top1": {
+            "factual": 0.7297297120094299,
+            "reasoning": 0.8985507488250732,
+            "code": 0.9670329689979553,
+            "hungarian": 0.6962025165557861
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 6.45,
+          "net_ffn_memory_saved_strict_pct": 68.55,
+          "net_ffn_memory_saved_bitsplit_pct": 68.55,
+          "mean_kl": 0.4761785864830017,
+          "median_kl": 0.09141504764556885,
+          "top1_agreement": 0.760869562625885,
+          "oracle_channel_recall": 0.7446146267983649,
+          "l1_energy_captured": 0.6409018879963292,
+          "category_top1": {
+            "factual": 0.6756756901741028,
+            "reasoning": 0.8550724387168884,
+            "code": 0.9450549483299255,
+            "hungarian": 0.5063291192054749
+          }
+        },
+        {
+          "channel_sparsity": 0.8,
+          "index_overhead_pct": 6.45,
+          "net_ffn_memory_saved_strict_pct": 73.55,
+          "net_ffn_memory_saved_bitsplit_pct": 73.55,
+          "mean_kl": 0.5955992341041565,
+          "median_kl": 0.1453477144241333,
+          "top1_agreement": 0.7355072498321533,
+          "oracle_channel_recall": 0.730181462234921,
+          "l1_energy_captured": 0.58241456726359,
+          "category_top1": {
+            "factual": 0.6756756901741028,
+            "reasoning": 0.7971014380455017,
+            "code": 0.9340659379959106,
+            "hungarian": 0.4810126721858978
+          }
+        }
+      ]
+    },
+    "int2_group128_full": {
+      "label": "Zero-Data Full INT2 Weight Index (8.85% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.4,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 31.15,
+          "net_ffn_memory_saved_bitsplit_pct": 36.15,
+          "mean_kl": 0.10388074070215225,
+          "median_kl": 0.016453273594379425,
+          "top1_agreement": 0.8913043737411499,
+          "oracle_channel_recall": 0.7853000081247754,
+          "l1_energy_captured": 0.8404515852323837,
+          "category_top1": {
+            "factual": 0.837837815284729,
+            "reasoning": 0.95652174949646,
+            "code": 0.9670329689979553,
+            "hungarian": 0.7721518874168396
+          }
+        },
+        {
+          "channel_sparsity": 0.5,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 41.15,
+          "net_ffn_memory_saved_bitsplit_pct": 45.31,
+          "mean_kl": 0.16543665528297424,
+          "median_kl": 0.025012657046318054,
+          "top1_agreement": 0.8623188138008118,
+          "oracle_channel_recall": 0.7517973602645927,
+          "l1_energy_captured": 0.7868198974885874,
+          "category_top1": {
+            "factual": 0.837837815284729,
+            "reasoning": 0.8840579986572266,
+            "code": 0.9670329689979553,
+            "hungarian": 0.7341772317886353
+          }
+        },
+        {
+          "channel_sparsity": 0.6,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 51.15,
+          "net_ffn_memory_saved_bitsplit_pct": 54.48,
+          "mean_kl": 0.2906101942062378,
+          "median_kl": 0.06110252067446709,
+          "top1_agreement": 0.8079710006713867,
+          "oracle_channel_recall": 0.7213783164819082,
+          "l1_energy_captured": 0.7221669961387912,
+          "category_top1": {
+            "factual": 0.7297297120094299,
+            "reasoning": 0.8405796885490417,
+            "code": 0.9340659379959106,
+            "hungarian": 0.6708860993385315
+          }
+        },
+        {
+          "channel_sparsity": 0.65,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 56.15,
+          "net_ffn_memory_saved_bitsplit_pct": 59.06,
+          "mean_kl": 0.38479772210121155,
+          "median_kl": 0.06049005687236786,
+          "top1_agreement": 0.782608687877655,
+          "oracle_channel_recall": 0.7087405206014713,
+          "l1_energy_captured": 0.6838636928134494,
+          "category_top1": {
+            "factual": 0.7297297120094299,
+            "reasoning": 0.8695651888847351,
+            "code": 0.901098906993866,
+            "hungarian": 0.594936728477478
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 66.15,
+          "net_ffn_memory_saved_bitsplit_pct": 68.23,
+          "mean_kl": 0.6284615397453308,
+          "median_kl": 0.14395704865455627,
+          "top1_agreement": 0.75,
+          "oracle_channel_recall": 0.6798998122620914,
+          "l1_energy_captured": 0.591322380118072,
+          "category_top1": {
+            "factual": 0.7027027010917664,
+            "reasoning": 0.8115941882133484,
+            "code": 0.9230769276618958,
+            "hungarian": 0.5189873576164246
+          }
+        },
+        {
+          "channel_sparsity": 0.8,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 71.15,
+          "net_ffn_memory_saved_bitsplit_pct": 72.81,
+          "mean_kl": 0.8967869877815247,
+          "median_kl": 0.24820779263973236,
+          "top1_agreement": 0.6884058117866516,
+          "oracle_channel_recall": 0.6604390440819164,
+          "l1_energy_captured": 0.5330011005927291,
+          "category_top1": {
+            "factual": 0.7027027010917664,
+            "reasoning": 0.739130437374115,
+            "code": 0.8901098966598511,
+            "hungarian": 0.40506330132484436
+          }
+        },
+        {
+          "channel_sparsity": 0.85,
+          "index_overhead_pct": 8.85,
+          "net_ffn_memory_saved_strict_pct": 76.15,
+          "net_ffn_memory_saved_bitsplit_pct": 77.4,
+          "mean_kl": 1.0701934099197388,
+          "median_kl": 0.4447643458843231,
+          "top1_agreement": 0.6268116235733032,
+          "oracle_channel_recall": 0.64359134187301,
+          "l1_energy_captured": 0.46161034103069043,
+          "category_top1": {
+            "factual": 0.5945945978164673,
+            "reasoning": 0.6811594367027283,
+            "code": 0.8571428656578064,
+            "hungarian": 0.3291139304637909
+          }
+        }
+      ]
+    },
+    "int4_group128_full": {
+      "label": "Zero-Data Full INT4 Weight Index (17.19% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.5,
+          "index_overhead_pct": 17.19,
+          "net_ffn_memory_saved_strict_pct": 32.81,
+          "net_ffn_memory_saved_bitsplit_pct": 41.15,
+          "mean_kl": 0.041184257715940475,
+          "median_kl": 0.00935082882642746,
+          "top1_agreement": 0.9202898740768433,
+          "oracle_channel_recall": 0.9238346210784383,
+          "l1_energy_captured": 0.8855863416360484,
+          "category_top1": {
+            "factual": 0.9189189076423645,
+            "reasoning": 0.9710144996643066,
+            "code": 1.0,
+            "hungarian": 0.7848101258277893
+          }
+        },
+        {
+          "channel_sparsity": 0.6,
+          "index_overhead_pct": 17.19,
+          "net_ffn_memory_saved_strict_pct": 42.81,
+          "net_ffn_memory_saved_bitsplit_pct": 49.48,
+          "mean_kl": 0.09296882897615433,
+          "median_kl": 0.02128438651561737,
+          "top1_agreement": 0.9057971239089966,
+          "oracle_channel_recall": 0.9181173638337188,
+          "l1_energy_captured": 0.8254892813662688,
+          "category_top1": {
+            "factual": 0.8108108043670654,
+            "reasoning": 0.95652174949646,
+            "code": 1.0,
+            "hungarian": 0.797468364238739
+          }
+        },
+        {
+          "channel_sparsity": 0.68,
+          "index_overhead_pct": 17.19,
+          "net_ffn_memory_saved_strict_pct": 50.81,
+          "net_ffn_memory_saved_bitsplit_pct": 56.15,
+          "mean_kl": 0.17400169372558594,
+          "median_kl": 0.037769194692373276,
+          "top1_agreement": 0.8405796885490417,
+          "oracle_channel_recall": 0.9100400445361932,
+          "l1_energy_captured": 0.7619184532927142,
+          "category_top1": {
+            "factual": 0.7567567825317383,
+            "reasoning": 0.8840579986572266,
+            "code": 0.9780219793319702,
+            "hungarian": 0.6835442781448364
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 17.19,
+          "net_ffn_memory_saved_strict_pct": 57.81,
+          "net_ffn_memory_saved_bitsplit_pct": 61.98,
+          "mean_kl": 0.320203959941864,
+          "median_kl": 0.07332079112529755,
+          "top1_agreement": 0.8079710006713867,
+          "oracle_channel_recall": 0.9036693908274174,
+          "l1_energy_captured": 0.6912018834716744,
+          "category_top1": {
+            "factual": 0.8108108043670654,
+            "reasoning": 0.8260869383811951,
+            "code": 0.9560439586639404,
+            "hungarian": 0.6202531456947327
+          }
+        },
+        {
+          "channel_sparsity": 0.8,
+          "index_overhead_pct": 17.19,
+          "net_ffn_memory_saved_strict_pct": 62.81,
+          "net_ffn_memory_saved_bitsplit_pct": 66.15,
+          "mean_kl": 0.45259979367256165,
+          "median_kl": 0.10564904659986496,
+          "top1_agreement": 0.7753623127937317,
+          "oracle_channel_recall": 0.8992536109354761,
+          "l1_energy_captured": 0.6293013741572698,
+          "category_top1": {
+            "factual": 0.7567567825317383,
+            "reasoning": 0.8550724387168884,
+            "code": 0.9120879173278809,
+            "hungarian": 0.5569620132446289
+          }
+        },
+        {
+          "channel_sparsity": 0.85,
+          "index_overhead_pct": 17.19,
+          "net_ffn_memory_saved_strict_pct": 67.81,
+          "net_ffn_memory_saved_bitsplit_pct": 70.31,
+          "mean_kl": 0.7212895154953003,
+          "median_kl": 0.1963355839252472,
+          "top1_agreement": 0.7318840622901917,
+          "oracle_channel_recall": 0.890599055836598,
+          "l1_energy_captured": 0.5538417521036334,
+          "category_top1": {
+            "factual": 0.6486486196517944,
+            "reasoning": 0.8115941882133484,
+            "code": 0.9120879173278809,
+            "hungarian": 0.49367088079452515
+          }
+        }
+      ]
+    },
+    "oracle_reference": {
+      "label": "Post-Hoc Exact Channel Oracle (0% idx)",
+      "metrics": [
+        {
+          "channel_sparsity": 0.3,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 30.0,
+          "net_ffn_memory_saved_bitsplit_pct": 30.0,
+          "mean_kl": 0.005919754970818758,
+          "median_kl": 0.0016893226420506835,
+          "top1_agreement": 0.97826087474823,
+          "oracle_channel_recall": 1.0,
+          "l1_energy_captured": 0.9690238001445929,
+          "category_top1": {
+            "factual": 0.9459459185600281,
+            "reasoning": 1.0,
+            "code": 0.9890109896659851,
+            "hungarian": 0.9620253443717957
+          }
+        },
+        {
+          "channel_sparsity": 0.4,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 40.0,
+          "net_ffn_memory_saved_bitsplit_pct": 40.0,
+          "mean_kl": 0.014203355647623539,
+          "median_kl": 0.003729891497641802,
+          "top1_agreement": 0.9637681245803833,
+          "oracle_channel_recall": 1.0,
+          "l1_energy_captured": 0.9393990023268594,
+          "category_top1": {
+            "factual": 0.9189189076423645,
+            "reasoning": 1.0,
+            "code": 0.9890109896659851,
+            "hungarian": 0.9240506291389465
+          }
+        },
+        {
+          "channel_sparsity": 0.5,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 50.0,
+          "net_ffn_memory_saved_bitsplit_pct": 50.0,
+          "mean_kl": 0.028852349147200584,
+          "median_kl": 0.006697934120893478,
+          "top1_agreement": 0.9420289993286133,
+          "oracle_channel_recall": 1.0,
+          "l1_energy_captured": 0.896286683777968,
+          "category_top1": {
+            "factual": 0.8648648858070374,
+            "reasoning": 0.9855072498321533,
+            "code": 1.0,
+            "hungarian": 0.8734177350997925
+          }
+        },
+        {
+          "channel_sparsity": 0.6,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 60.0,
+          "net_ffn_memory_saved_bitsplit_pct": 60.0,
+          "mean_kl": 0.07800301164388657,
+          "median_kl": 0.014463172294199467,
+          "top1_agreement": 0.8985507488250732,
+          "oracle_channel_recall": 0.999999925494194,
+          "l1_energy_captured": 0.8363393487201797,
+          "category_top1": {
+            "factual": 0.837837815284729,
+            "reasoning": 0.9420289993286133,
+            "code": 0.9780219793319702,
+            "hungarian": 0.797468364238739
+          }
+        },
+        {
+          "channel_sparsity": 0.7,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 70.0,
+          "net_ffn_memory_saved_bitsplit_pct": 70.0,
+          "mean_kl": 0.157150536775589,
+          "median_kl": 0.040944162756204605,
+          "top1_agreement": 0.8731883764266968,
+          "oracle_channel_recall": 0.999999925494194,
+          "l1_energy_captured": 0.7541482378211286,
+          "category_top1": {
+            "factual": 0.7837837934494019,
+            "reasoning": 0.9275362491607666,
+            "code": 0.9890109896659851,
+            "hungarian": 0.7341772317886353
+          }
+        },
+        {
+          "channel_sparsity": 0.75,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 75.0,
+          "net_ffn_memory_saved_bitsplit_pct": 75.0,
+          "mean_kl": 0.23139448463916779,
+          "median_kl": 0.05460825562477112,
+          "top1_agreement": 0.8333333134651184,
+          "oracle_channel_recall": 1.0,
+          "l1_energy_captured": 0.7016881344219049,
+          "category_top1": {
+            "factual": 0.7837837934494019,
+            "reasoning": 0.8985507488250732,
+            "code": 1.0,
+            "hungarian": 0.607594907283783
+          }
+        },
+        {
+          "channel_sparsity": 0.8,
+          "index_overhead_pct": 0.0,
+          "net_ffn_memory_saved_strict_pct": 80.0,
+          "net_ffn_memory_saved_bitsplit_pct": 80.0,
+          "mean_kl": 0.362920343875885,
+          "median_kl": 0.09602487832307816,
+          "top1_agreement": 0.7898550629615784,
+          "oracle_channel_recall": 1.0,
+          "l1_energy_captured": 0.639418521275123,
+          "category_top1": {
+            "factual": 0.7567567825317383,
+            "reasoning": 0.8695651888847351,
+            "code": 0.9670329689979553,
+            "hungarian": 0.5316455960273743
+          }
+        }
+      ]
+    }
+  },
+  "zero_training_generations": [
+    {
+      "mode": "int2_group128_full",
+      "channel_sparsity": 0.65,
+      "net_ffn_memory_saved_strict_pct": 56.15,
+      "prompt": "Explain concisely why memory bandwidth, rather than compute FLOPs, bottlenecks single-batch LLM inference:",
+      "exact_prefix_tokens": 0,
+      "token_position_match": 0.0,
+      "dense_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM",
+      "sparse_text": "- Memory bandwidth is the rate at乖乖 at which data can be transferred between the CPU and GPU, which is a bottleneck in single-batch LLM inference.\n- Compute FLOPs, on the other hand, is the rate at which"
+    },
+    {
+      "mode": "int2_group128_full",
+      "channel_sparsity": 0.65,
+      "net_ffn_memory_saved_strict_pct": 56.15,
+      "prompt": "def merge_two_sorted_lists(a: list[int], b: list[int]) -> list[int]:",
+      "exact_prefix_tokens": 19,
+      "token_position_match": 0.4167,
+      "dense_text": "    \"\"\"\n    Merge two sorted lists into a single sorted list.\n    \n    This function takes two sorted lists (ascending order) and merges them into a single sorted list.\n    The original lists are not modified. The function works by comparing the",
+      "sparse_text": "    \"\"\"\n    Merge two sorted lists into a single sorted list.\n    \n    This function takes two lists that are already sorted and merges them into a single\n    sorted list. The function iterates over both lists and appends the smaller element"
+    },
+    {
+      "mode": "int2_group128_full",
+      "channel_sparsity": 0.65,
+      "net_ffn_memory_saved_strict_pct": 56.15,
+      "prompt": "Problem: A rectangle has perimeter 36 cm and length twice its width. Find its area step by step.\nSolution:",
+      "exact_prefix_tokens": 1,
+      "token_position_match": 0.0417,
+      "dense_text": " Let the width be x cm. Then the length is 2x cm. The perimeter is 2(x + 2x) = 6x cm. We know that the perimeter is 36 cm, so 6x",
+      "sparse_text": " Let x be the width of the rectangle. Then the length of the rectangle is 2x. The perimeter of the rectangle is 2x + 2x = 4x. We are given that the perimeter is 36"
+    },
+    {
+      "mode": "coord768_int4",
+      "channel_sparsity": 0.62,
+      "net_ffn_memory_saved_strict_pct": 55.55,
+      "prompt": "Explain concisely why memory bandwidth, rather than compute FLOPs, bottlenecks single-batch LLM inference:",
+      "exact_prefix_tokens": 0,
+      "token_position_match": 0.0,
+      "dense_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM",
+      "sparse_text": "Memory bandwidth is the rate at which data can be transferred between the CPU and the GPU. It is a critical factor in determining the performance of a GPU, as it limits the amount of data that can be processed at any given time. In"
+    },
+    {
+      "mode": "coord768_int4",
+      "channel_sparsity": 0.62,
+      "net_ffn_memory_saved_strict_pct": 55.55,
+      "prompt": "def merge_two_sorted_lists(a: list[int], b: list[int]) -> list[int]:",
+      "exact_prefix_tokens": 12,
+      "token_position_match": 0.25,
+      "dense_text": "    \"\"\"\n    Merge two sorted lists into a single sorted list.\n    \n    This function takes two sorted lists (ascending order) and merges them into a single sorted list.\n    The original lists are not modified. The function works by comparing the",
+      "sparse_text": "    \"\"\"\n    Merge two sorted lists into a single sorted list using a recursive approach.\n\n    This function takes two sorted lists (sublists) and merges them into one sorted list.\n    The merge operation is done recursively, meaning that the lists"
+    },
+    {
+      "mode": "coord768_int4",
+      "channel_sparsity": 0.62,
+      "net_ffn_memory_saved_strict_pct": 55.55,
+      "prompt": "Problem: A rectangle has perimeter 36 cm and length twice its width. Find its area step by step.\nSolution:",
+      "exact_prefix_tokens": 3,
+      "token_position_match": 0.0625,
+      "dense_text": " Let the width be x cm. Then the length is 2x cm. The perimeter is 2(x + 2x) = 6x cm. We know that the perimeter is 36 cm, so 6x",
+      "sparse_text": " Let the width of the rectangle be x cm. Then, the length of the rectangle is 2x cm.\nThe perimeter of the rectangle is given by the formula P = 2(l + w), where l is the length and w"
+    }
+  ],
+  "elapsed_sec": 40.06
+}

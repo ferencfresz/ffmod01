@@ -1,0 +1,760 @@
+{
+  "probe_layer": 6,
+  "pca_rank": 24,
+  "heldout_difficulty_probe_spearman": {
+    "rho": 0.652814120920433,
+    "p_value": 6.598975586687895e-35
+  },
+  "sample_layer_gains_at_60pct": [
+    1.0681,
+    1.0001,
+    1.0,
+    1.0008,
+    1.0029,
+    1.0111,
+    1.0127,
+    1.0132,
+    1.0164,
+    1.0206,
+    1.0285,
+    1.0597,
+    1.0733,
+    1.0823,
+    1.0869,
+    1.0826,
+    1.089,
+    1.077,
+    1.0762,
+    1.0685,
+    1.0692,
+    1.064,
+    1.0603,
+    1.0578,
+    1.0553,
+    1.0519,
+    1.0525,
+    1.0404,
+    1.035,
+    1.0292,
+    1.0544,
+    1.0217,
+    1.0222,
+    1.0201,
+    1.0233,
+    1.0124
+  ],
+  "modes": {
+    "1_uniform_uncomp": [
+      {
+        "target_sparsity": 0.4,
+        "realized_avg_sparsity": 0.4,
+        "net_ffn_memory_saved_pct": 38.76,
+        "mean_kl": 0.38519248366355896,
+        "median_kl": 0.10094505548477173,
+        "top1_agreement": 0.79347825050354,
+        "mean_relative_mlp_output_error": 0.28073120141279007,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.46922293305397034,
+            "top1": 0.7027027010917664
+          },
+          "reasoning": {
+            "mean_kl": 0.7878497838973999,
+            "top1": 0.739130437374115
+          },
+          "code": {
+            "mean_kl": 0.12635383009910583,
+            "top1": 0.9340659379959106
+          },
+          "hungarian": {
+            "mean_kl": 0.29230448603630066,
+            "top1": 0.7215189933776855
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.5,
+        "realized_avg_sparsity": 0.5,
+        "net_ffn_memory_saved_pct": 48.76,
+        "mean_kl": 0.5256478786468506,
+        "median_kl": 0.18525739014148712,
+        "top1_agreement": 0.7210144996643066,
+        "mean_relative_mlp_output_error": 0.3397914907206238,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.7076092958450317,
+            "top1": 0.6216216087341309
+          },
+          "reasoning": {
+            "mean_kl": 0.8373780250549316,
+            "top1": 0.739130437374115
+          },
+          "code": {
+            "mean_kl": 0.2056199163198471,
+            "top1": 0.8571428656578064
+          },
+          "hungarian": {
+            "mean_kl": 0.5367946028709412,
+            "top1": 0.594936728477478
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.6,
+        "realized_avg_sparsity": 0.6,
+        "net_ffn_memory_saved_pct": 58.77,
+        "mean_kl": 0.8129672408103943,
+        "median_kl": 0.29842641949653625,
+        "top1_agreement": 0.6739130616188049,
+        "mean_relative_mlp_output_error": 0.4007227438883597,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.9397979974746704,
+            "top1": 0.6216216087341309
+          },
+          "reasoning": {
+            "mean_kl": 1.2653605937957764,
+            "top1": 0.6521739363670349
+          },
+          "code": {
+            "mean_kl": 0.4024660587310791,
+            "top1": 0.8461538553237915
+          },
+          "hungarian": {
+            "mean_kl": 0.8312929272651672,
+            "top1": 0.5189873576164246
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.7,
+        "realized_avg_sparsity": 0.7,
+        "net_ffn_memory_saved_pct": 68.77,
+        "mean_kl": 1.3033764362335205,
+        "median_kl": 0.5674678087234497,
+        "top1_agreement": 0.5833333134651184,
+        "mean_relative_mlp_output_error": 0.467312593257197,
+        "by_category": {
+          "factual": {
+            "mean_kl": 1.7367497682571411,
+            "top1": 0.4864864945411682
+          },
+          "reasoning": {
+            "mean_kl": 1.5735892057418823,
+            "top1": 0.5652173757553101
+          },
+          "code": {
+            "mean_kl": 0.6513726711273193,
+            "top1": 0.8021978139877319
+          },
+          "hungarian": {
+            "mean_kl": 1.615437626838684,
+            "top1": 0.39240506291389465
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.75,
+        "realized_avg_sparsity": 0.75,
+        "net_ffn_memory_saved_pct": 73.76,
+        "mean_kl": 1.617241621017456,
+        "median_kl": 0.8286522626876831,
+        "top1_agreement": 0.5398550629615784,
+        "mean_relative_mlp_output_error": 0.5083963206868956,
+        "by_category": {
+          "factual": {
+            "mean_kl": 2.0344319343566895,
+            "top1": 0.4054054021835327
+          },
+          "reasoning": {
+            "mean_kl": 1.7753475904464722,
+            "top1": 0.5507246255874634
+          },
+          "code": {
+            "mean_kl": 0.8377416133880615,
+            "top1": 0.8131868243217468
+          },
+          "hungarian": {
+            "mean_kl": 2.181661367416382,
+            "top1": 0.27848100662231445
+          }
+        }
+      }
+    ],
+    "2_uniform_mean_comp": [
+      {
+        "target_sparsity": 0.4,
+        "realized_avg_sparsity": 0.4,
+        "net_ffn_memory_saved_pct": 38.76,
+        "mean_kl": 0.3396245837211609,
+        "median_kl": 0.08544619381427765,
+        "top1_agreement": 0.8188405632972717,
+        "mean_relative_mlp_output_error": 0.28389105345963295,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.494286447763443,
+            "top1": 0.7027027010917664
+          },
+          "reasoning": {
+            "mean_kl": 0.6738128066062927,
+            "top1": 0.7971014380455017
+          },
+          "code": {
+            "mean_kl": 0.0935048758983612,
+            "top1": 0.9560439586639404
+          },
+          "hungarian": {
+            "mean_kl": 0.25880712270736694,
+            "top1": 0.7341772317886353
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.5,
+        "realized_avg_sparsity": 0.5,
+        "net_ffn_memory_saved_pct": 48.76,
+        "mean_kl": 0.4977794587612152,
+        "median_kl": 0.16684357821941376,
+        "top1_agreement": 0.7644927501678467,
+        "mean_relative_mlp_output_error": 0.33637325669729357,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.7070087194442749,
+            "top1": 0.6486486196517944
+          },
+          "reasoning": {
+            "mean_kl": 0.8611487746238708,
+            "top1": 0.7101449370384216
+          },
+          "code": {
+            "mean_kl": 0.196818545460701,
+            "top1": 0.901098906993866
+          },
+          "hungarian": {
+            "mean_kl": 0.4290893077850342,
+            "top1": 0.7088607549667358
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.6,
+        "realized_avg_sparsity": 0.6,
+        "net_ffn_memory_saved_pct": 58.77,
+        "mean_kl": 0.6697663068771362,
+        "median_kl": 0.2882729172706604,
+        "top1_agreement": 0.6884058117866516,
+        "mean_relative_mlp_output_error": 0.39204669165256845,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.9290704727172852,
+            "top1": 0.6756756901741028
+          },
+          "reasoning": {
+            "mean_kl": 0.9113130569458008,
+            "top1": 0.695652186870575
+          },
+          "code": {
+            "mean_kl": 0.34820476174354553,
+            "top1": 0.8571428656578064
+          },
+          "hungarian": {
+            "mean_kl": 0.7077553868293762,
+            "top1": 0.49367088079452515
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.7,
+        "realized_avg_sparsity": 0.7,
+        "net_ffn_memory_saved_pct": 68.77,
+        "mean_kl": 1.0331460237503052,
+        "median_kl": 0.43914392590522766,
+        "top1_agreement": 0.6304348111152649,
+        "mean_relative_mlp_output_error": 0.45572685964806525,
+        "by_category": {
+          "factual": {
+            "mean_kl": 1.5419871807098389,
+            "top1": 0.5135135054588318
+          },
+          "reasoning": {
+            "mean_kl": 1.2502219676971436,
+            "top1": 0.6376811861991882
+          },
+          "code": {
+            "mean_kl": 0.5476589798927307,
+            "top1": 0.8571428656578064
+          },
+          "hungarian": {
+            "mean_kl": 1.1644619703292847,
+            "top1": 0.4177215099334717
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.75,
+        "realized_avg_sparsity": 0.75,
+        "net_ffn_memory_saved_pct": 73.76,
+        "mean_kl": 1.2703815698623657,
+        "median_kl": 0.6542692184448242,
+        "top1_agreement": 0.5833333134651184,
+        "mean_relative_mlp_output_error": 0.49157216919573127,
+        "by_category": {
+          "factual": {
+            "mean_kl": 2.1992735862731934,
+            "top1": 0.4324324429035187
+          },
+          "reasoning": {
+            "mean_kl": 1.3181968927383423,
+            "top1": 0.5942028760910034
+          },
+          "code": {
+            "mean_kl": 0.7285151481628418,
+            "top1": 0.7802197933197021
+          },
+          "hungarian": {
+            "mean_kl": 1.41774320602417,
+            "top1": 0.4177215099334717
+          }
+        }
+      }
+    ],
+    "3_uniform_full_comp": [
+      {
+        "target_sparsity": 0.4,
+        "realized_avg_sparsity": 0.4,
+        "net_ffn_memory_saved_pct": 38.38,
+        "mean_kl": 0.37342697381973267,
+        "median_kl": 0.11128885298967361,
+        "top1_agreement": 0.79347825050354,
+        "mean_relative_mlp_output_error": 0.290254136591102,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.4765738844871521,
+            "top1": 0.7297297120094299
+          },
+          "reasoning": {
+            "mean_kl": 0.7350545525550842,
+            "top1": 0.7681159377098083
+          },
+          "code": {
+            "mean_kl": 0.10311346501111984,
+            "top1": 0.9340659379959106
+          },
+          "hungarian": {
+            "mean_kl": 0.32063955068588257,
+            "top1": 0.6835442781448364
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.5,
+        "realized_avg_sparsity": 0.5,
+        "net_ffn_memory_saved_pct": 48.42,
+        "mean_kl": 0.527491569519043,
+        "median_kl": 0.1684439480304718,
+        "top1_agreement": 0.7536231875419617,
+        "mean_relative_mlp_output_error": 0.3413229306655315,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.6987636089324951,
+            "top1": 0.6756756901741028
+          },
+          "reasoning": {
+            "mean_kl": 0.8443894386291504,
+            "top1": 0.695652186870575
+          },
+          "code": {
+            "mean_kl": 0.18571312725543976,
+            "top1": 0.9230769276618958
+          },
+          "hungarian": {
+            "mean_kl": 0.564185619354248,
+            "top1": 0.6455696225166321
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.6,
+        "realized_avg_sparsity": 0.6,
+        "net_ffn_memory_saved_pct": 58.46,
+        "mean_kl": 0.7395374178886414,
+        "median_kl": 0.23223045468330383,
+        "top1_agreement": 0.6811594367027283,
+        "mean_relative_mlp_output_error": 0.39919775760305737,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.950711727142334,
+            "top1": 0.6216216087341309
+          },
+          "reasoning": {
+            "mean_kl": 1.0082417726516724,
+            "top1": 0.7101449370384216
+          },
+          "code": {
+            "mean_kl": 0.32786229252815247,
+            "top1": 0.901098906993866
+          },
+          "hungarian": {
+            "mean_kl": 0.8801500201225281,
+            "top1": 0.4303797483444214
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.7,
+        "realized_avg_sparsity": 0.7,
+        "net_ffn_memory_saved_pct": 68.51,
+        "mean_kl": 1.1064790487289429,
+        "median_kl": 0.4355017840862274,
+        "top1_agreement": 0.6340579986572266,
+        "mean_relative_mlp_output_error": 0.4630740412814905,
+        "by_category": {
+          "factual": {
+            "mean_kl": 1.2028030157089233,
+            "top1": 0.5135135054588318
+          },
+          "reasoning": {
+            "mean_kl": 1.2546119689941406,
+            "top1": 0.695652186870575
+          },
+          "code": {
+            "mean_kl": 0.5869513750076294,
+            "top1": 0.8461538553237915
+          },
+          "hungarian": {
+            "mean_kl": 1.5304263830184937,
+            "top1": 0.39240506291389465
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.75,
+        "realized_avg_sparsity": 0.75,
+        "net_ffn_memory_saved_pct": 73.52,
+        "mean_kl": 1.249261736869812,
+        "median_kl": 0.5854716300964355,
+        "top1_agreement": 0.6014492511749268,
+        "mean_relative_mlp_output_error": 0.5001813667897497,
+        "by_category": {
+          "factual": {
+            "mean_kl": 1.6708742380142212,
+            "top1": 0.5945945978164673
+          },
+          "reasoning": {
+            "mean_kl": 1.3135695457458496,
+            "top1": 0.5942028760910034
+          },
+          "code": {
+            "mean_kl": 0.5782714486122131,
+            "top1": 0.8351648449897766
+          },
+          "hungarian": {
+            "mean_kl": 1.7685428857803345,
+            "top1": 0.3417721390724182
+          }
+        }
+      }
+    ],
+    "4_adaptive_full_comp": [
+      {
+        "target_sparsity": 0.4,
+        "realized_avg_sparsity": 0.4043,
+        "net_ffn_memory_saved_pct": 38.82,
+        "mean_kl": 0.4425897002220154,
+        "median_kl": 0.09387554228305817,
+        "top1_agreement": 0.8188405632972717,
+        "mean_relative_mlp_output_error": 0.3018143677666861,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.5432108044624329,
+            "top1": 0.7297297120094299
+          },
+          "reasoning": {
+            "mean_kl": 0.7740137577056885,
+            "top1": 0.7971014380455017
+          },
+          "code": {
+            "mean_kl": 0.23288194835186005,
+            "top1": 0.9230769276618958
+          },
+          "hungarian": {
+            "mean_kl": 0.3475538492202759,
+            "top1": 0.7594936490058899
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.5,
+        "realized_avg_sparsity": 0.5018,
+        "net_ffn_memory_saved_pct": 48.6,
+        "mean_kl": 0.6857658624649048,
+        "median_kl": 0.14854232966899872,
+        "top1_agreement": 0.7427536249160767,
+        "mean_relative_mlp_output_error": 0.3585626600607712,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.7566234469413757,
+            "top1": 0.6216216087341309
+          },
+          "reasoning": {
+            "mean_kl": 1.0300555229187012,
+            "top1": 0.7101449370384216
+          },
+          "code": {
+            "mean_kl": 0.5060356259346008,
+            "top1": 0.8571428656578064
+          },
+          "hungarian": {
+            "mean_kl": 0.5589017271995544,
+            "top1": 0.6962025165557861
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.6,
+        "realized_avg_sparsity": 0.6014,
+        "net_ffn_memory_saved_pct": 58.61,
+        "mean_kl": 1.0584511756896973,
+        "median_kl": 0.26397550106048584,
+        "top1_agreement": 0.6521739363670349,
+        "mean_relative_mlp_output_error": 0.42828228322953993,
+        "by_category": {
+          "factual": {
+            "mean_kl": 1.3710323572158813,
+            "top1": 0.4324324429035187
+          },
+          "reasoning": {
+            "mean_kl": 1.0504539012908936,
+            "top1": 0.6811594367027283
+          },
+          "code": {
+            "mean_kl": 1.110097050666809,
+            "top1": 0.791208803653717
+          },
+          "hungarian": {
+            "mean_kl": 0.8595467209815979,
+            "top1": 0.5696202516555786
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.7,
+        "realized_avg_sparsity": 0.7057,
+        "net_ffn_memory_saved_pct": 69.07,
+        "mean_kl": 1.452771782875061,
+        "median_kl": 0.5159748792648315,
+        "top1_agreement": 0.5615941882133484,
+        "mean_relative_mlp_output_error": 0.506474716364917,
+        "by_category": {
+          "factual": {
+            "mean_kl": 2.0630486011505127,
+            "top1": 0.45945945382118225
+          },
+          "reasoning": {
+            "mean_kl": 1.2838557958602905,
+            "top1": 0.6376811861991882
+          },
+          "code": {
+            "mean_kl": 1.2694154977798462,
+            "top1": 0.692307710647583
+          },
+          "hungarian": {
+            "mean_kl": 1.5256884098052979,
+            "top1": 0.39240506291389465
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.75,
+        "realized_avg_sparsity": 0.7521,
+        "net_ffn_memory_saved_pct": 73.73,
+        "mean_kl": 1.8272255659103394,
+        "median_kl": 0.8870245218276978,
+        "top1_agreement": 0.489130437374115,
+        "mean_relative_mlp_output_error": 0.5438763074821004,
+        "by_category": {
+          "factual": {
+            "mean_kl": 2.68522310256958,
+            "top1": 0.3513513505458832
+          },
+          "reasoning": {
+            "mean_kl": 1.471923589706421,
+            "top1": 0.5507246255874634
+          },
+          "code": {
+            "mean_kl": 1.672114610671997,
+            "top1": 0.6593406796455383
+          },
+          "hungarian": {
+            "mean_kl": 1.91437828540802,
+            "top1": 0.3037974536418915
+          }
+        }
+      }
+    ],
+    "5_oracle_reference": [
+      {
+        "target_sparsity": 0.4,
+        "realized_avg_sparsity": 0.4,
+        "net_ffn_memory_saved_pct": 40.0,
+        "mean_kl": 0.014203355647623539,
+        "median_kl": 0.003729891497641802,
+        "top1_agreement": 0.9637681245803833,
+        "mean_relative_mlp_output_error": 0.06170324802304902,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.016272611916065216,
+            "top1": 0.9189189076423645
+          },
+          "reasoning": {
+            "mean_kl": 0.013046913780272007,
+            "top1": 1.0
+          },
+          "code": {
+            "mean_kl": 0.0022190907038748264,
+            "top1": 0.9890109896659851
+          },
+          "hungarian": {
+            "mean_kl": 0.028048919513821602,
+            "top1": 0.9240506291389465
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.5,
+        "realized_avg_sparsity": 0.5,
+        "net_ffn_memory_saved_pct": 50.0,
+        "mean_kl": 0.028852349147200584,
+        "median_kl": 0.006697934120893478,
+        "top1_agreement": 0.9420289993286133,
+        "mean_relative_mlp_output_error": 0.09394780580704618,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.039391640573740005,
+            "top1": 0.8648648858070374
+          },
+          "reasoning": {
+            "mean_kl": 0.03163648769259453,
+            "top1": 0.9855072498321533
+          },
+          "code": {
+            "mean_kl": 0.0041831792332232,
+            "top1": 1.0
+          },
+          "hungarian": {
+            "mean_kl": 0.04990091174840927,
+            "top1": 0.8734177350997925
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.6,
+        "realized_avg_sparsity": 0.6,
+        "net_ffn_memory_saved_pct": 60.0,
+        "mean_kl": 0.07800301164388657,
+        "median_kl": 0.014463172294199467,
+        "top1_agreement": 0.8985507488250732,
+        "mean_relative_mlp_output_error": 0.1356003195364287,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.09844062477350235,
+            "top1": 0.837837815284729
+          },
+          "reasoning": {
+            "mean_kl": 0.12855559587478638,
+            "top1": 0.9420289993286133
+          },
+          "code": {
+            "mean_kl": 0.01504988968372345,
+            "top1": 0.9780219793319702
+          },
+          "hungarian": {
+            "mean_kl": 0.09679307788610458,
+            "top1": 0.797468364238739
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.7,
+        "realized_avg_sparsity": 0.7,
+        "net_ffn_memory_saved_pct": 70.0,
+        "mean_kl": 0.157150536775589,
+        "median_kl": 0.040944162756204605,
+        "top1_agreement": 0.8731883764266968,
+        "mean_relative_mlp_output_error": 0.18905298948811833,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.3132795989513397,
+            "top1": 0.7837837934494019
+          },
+          "reasoning": {
+            "mean_kl": 0.17720021307468414,
+            "top1": 0.9275362491607666
+          },
+          "code": {
+            "mean_kl": 0.02345009706914425,
+            "top1": 0.9890109896659851
+          },
+          "hungarian": {
+            "mean_kl": 0.2205243855714798,
+            "top1": 0.7341772317886353
+          }
+        }
+      },
+      {
+        "target_sparsity": 0.75,
+        "realized_avg_sparsity": 0.75,
+        "net_ffn_memory_saved_pct": 75.0,
+        "mean_kl": 0.23139448463916779,
+        "median_kl": 0.05460825562477112,
+        "top1_agreement": 0.8333333134651184,
+        "mean_relative_mlp_output_error": 0.22300910241998886,
+        "by_category": {
+          "factual": {
+            "mean_kl": 0.28870880603790283,
+            "top1": 0.7837837934494019
+          },
+          "reasoning": {
+            "mean_kl": 0.25635164976119995,
+            "top1": 0.8985507488250732
+          },
+          "code": {
+            "mean_kl": 0.031980324536561966,
+            "top1": 1.0
+          },
+          "hungarian": {
+            "mean_kl": 0.4124579131603241,
+            "top1": 0.607594907283783
+          }
+        }
+      }
+    ]
+  },
+  "real_adaptive_generations_55pct_skip": [
+    {
+      "prompt": "Explain concisely why memory bandwidth, rather than compute FLOPs, bottlenecks single-batch LLM inference:",
+      "realized_decode_sparsity": 0.637,
+      "exact_prefix_tokens": 0,
+      "token_position_match": 0.0417,
+      "dense_text": "1. Memory bandwidth is the rate at which data can be transferred between the CPU and memory, while compute FLOPs refer to the number of floating-point operations that can be performed by the CPU.\n2. In the context of LLM",
+      "adaptive_compensated_text": "Memory bandwidth is the amount of data transferred per unit time, which is the bandwidth of the memory bus. It is the bandwidth of the memory bus, which is the bandwidth of the memory bus. The bandwidth of the memory bus is the bandwidth"
+    },
+    {
+      "prompt": "def merge_two_sorted_lists(a: list[int], b: list[int]) -> list[int]:",
+      "realized_decode_sparsity": 0.7066,
+      "exact_prefix_tokens": 1,
+      "token_position_match": 0.0417,
+      "dense_text": "    \"\"\"\n    Merge two sorted lists into a single sorted list.\n    \n    This function takes two sorted lists (ascending order) and merges them into a single sorted list.\n    The original lists are not modified. The function works by comparing the",
+      "adaptive_compensated_text": "    c: list[int] = []\n    i = 0\n    j = 0\n    while i < len(a) and i < len(b):\n        c.append(a[i])\n        i += 1\n        j ="
+    },
+    {
+      "prompt": "Problem: A rectangle has perimeter 36 cm and length twice its width. Find its area step by step.\nSolution:",
+      "realized_decode_sparsity": 0.6023,
+      "exact_prefix_tokens": 3,
+      "token_position_match": 0.1042,
+      "dense_text": " Let the width be x cm. Then the length is 2x cm. The perimeter is 2(x + 2x) = 6x cm. We know that the perimeter is 36 cm, so 6x",
+      "adaptive_compensated_text": " Let the width of the rectangle be x cm. Then, the length of the rectangle is 2x cm. The perimeter of the rectangle is 36 cm. Therefore, we can write the equation 2x + 2x"
+    }
+  ],
+  "elapsed_sec": 36.5
+}
