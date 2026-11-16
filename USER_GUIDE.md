@@ -1,6 +1,6 @@
 # FFMod Felhasználói Kézikönyv (User Guide)
 
-**Verzió:** `ffmod v0.2.0`  
+**Verzió:** `ffmod v0.2.0` · **DOI:** [`10.5281/zenodo.24277071`](https://doi.org/10.5281/zenodo.24277071)  
 **Kapcsolódó dokumentumok:** [`README.md`](README.md) · [`SYSTEM_GUIDE.md`](SYSTEM_GUIDE.md) · [`KISERLETI_JELENTES.md`](KISERLETI_JELENTES.md) · [`ideas.md`](ideas.md) · [Angol cikk (PDF)](paper/ffmod_paper_en.pdf) · [Magyar cikk (PDF)](paper/ffmod_paper_hu.pdf)
 
 ---

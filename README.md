@@ -1,5 +1,9 @@
 # ffmod — Hordozható Súly-Indexelt Ritka SwiGLU/GeGLU Motor és Kutatási Keretrendszer
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24277071.svg)](https://doi.org/10.5281/zenodo.24277071)
+[![Release](https://img.shields.io/github/v/release/ferencfresz/ffmod01)](https://github.com/ferencfresz/ffmod01/releases/tag/v0.2.0)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Tanításmentes (*zero-training*), kétlépcsős **Coarse-to-Fine Súly-Indexelt Triton GPU Motor** (`ffmod`), amely szétválasztja a nagy nyelvi modellek **tudástárolását (statikus súlyok)** a **tudás végrehajtásától (dinamikus, bemenetfüggő számítási terv)**:
 
 $$\text{Állapot} \;\longrightarrow\; \text{Számítási terv (Top-}D\text{ koord. + Smooth-INT4 index)} \;\longrightarrow\; \text{Csak a szükséges csatornák (BF16 / BitSplit-12 / FP8)}$$
@@ -7,7 +11,7 @@ $$\text{Állapot} \;\longrightarrow\; \text{Számítási terv (Top-}D\text{ koor
 📘 **Felhasználói Kézikönyv (User Guide):** [`USER_GUIDE.md`](USER_GUIDE.md)  
 ⚙️ **Rendszerarchitektúra Kézikönyv (System Guide):** [`SYSTEM_GUIDE.md`](SYSTEM_GUIDE.md)  
 📊 **Teljes kísérleti és mérnöki dokumentáció:** [`KISERLETI_JELENTES.md`](KISERLETI_JELENTES.md)  
-📄 **Tudományos cikk (PDF):** [Angol (`paper/ffmod_paper_en.pdf`)](paper/ffmod_paper_en.pdf) | [Magyar (`paper/ffmod_paper_hu.pdf`)](paper/ffmod_paper_hu.pdf)
+📄 **Tudományos cikk (Zenodo DOI: [`10.5281/zenodo.24277071`](https://doi.org/10.5281/zenodo.24277071)):** [Angol (`paper/ffmod_paper_en.pdf`)](paper/ffmod_paper_en.pdf) | [Magyar (`paper/ffmod_paper_hu.pdf`)](paper/ffmod_paper_hu.pdf)
 
 ---
 
@@ -103,3 +107,23 @@ tiered_model, tokenizer, info = load_tiered_causal_lm(
 - [`SYSTEM_GUIDE.md`](SYSTEM_GUIDE.md) — Rendszerarchitektúra és mérnöki dokumentáció (tenzor-specifikáció, Triton kernelek, 2-streames `CUDAGraph` DAG, `.ffmod_cache_v1`).
 - [`KISERLETI_JELENTES.md`](KISERLETI_JELENTES.md) — Teljes magyar nyelvű kísérleti (`Exp 1–9B`) és kutatási dokumentáció.
 - [`ideas.md`](ideas.md) — Gyakorlati alkalmazási területek, fizikai határok és következő generációs K+F irányok.
+- [`CITATION.cff`](CITATION.cff) — Hivatalos DOI és idézési metaadatok.
+
+---
+
+## Idézés / Citation (BibTeX)
+
+Ha kutatásodban vagy rendszeredben felhasználod az **FFMod** motort vagy tanulmányt, kérjük, hivatkozz rá az alábbi DOI-val:
+
+```bibtex
+@misc{fresz2026ffmod,
+  author       = {Fr{\'e}sz, Ferenc},
+  title        = {{Self-Indexed Sparse SwiGLU: Zero-Training Coarse-to-Fine Routing, Negative-Overhead Mixed-Precision Storage, and Pre-Attention PCIe 5.0 Prefetching}},
+  month        = nov,
+  year         = 2026,
+  publisher    = {Zenodo},
+  version      = {0.2.0},
+  doi          = {10.5281/zenodo.24277071},
+  url          = {https://doi.org/10.5281/zenodo.24277071}
+}
+```

@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+title: "FFMod: Self-Indexed Sparse SwiGLU Engine & Pre-Attention PCIe 5.0 Tiered LLM Runtime"
+message: "If you use FFMod or build upon our research, please cite it using the metadata below."
+type: software
+authors:
+  - family-names: "Frész"
+    given-names: "Ferenc"
+    email: "ferenc.fresz@gmail.com"
+version: "0.2.0"
+doi: "10.5281/zenodo.24277071"
+date-released: "2026-11-16"
+url: "https://github.com/ferencfresz/ffmod01"
+repository-code: "https://github.com/ferencfresz/ffmod01"
+license: MIT
+keywords:
+  - large-language-models
+  - sparse-inference
+  - swiglu
+  - triton-kernels
+  - quantization
+  - fp8
+  - pcie-offloading
+  - cuda-graphs
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Frész"
+      given-names: "Ferenc"
+      email: "ferenc.fresz@gmail.com"
+  title: "Self-Indexed Sparse SwiGLU: Zero-Training Coarse-to-Fine Routing, Negative-Overhead Mixed-Precision Storage, and Pre-Attention PCIe 5.0 Prefetching"
+  year: 2026
+  month: 11
+  doi: "10.5281/zenodo.24277071"
+  url: "https://doi.org/10.5281/zenodo.24277071"
+  publisher:
+    name: "Zenodo"
