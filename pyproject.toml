@@ -7,6 +7,10 @@ name = "ffmod"
 version = "0.2.0"
 description = "Zero-Training Coarse-to-Fine Weight-Indexed Sparse SwiGLU/GeGLU Engine in Triton"
 readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Ferenc Frész", email = "ferenc.fresz@gmail.com"},
+]
 requires-python = ">=3.10"
 dependencies = [
     "torch>=2.4.0",
@@ -14,6 +18,9 @@ dependencies = [
     "transformers>=4.45.0",
     "safetensors>=0.4.0",
 ]
+
+[project.urls]
+Repository = "https://github.com/ferencfresz/ffmod01"
 
 [project.scripts]
 ffmod-serve = "ffmod.server:cli_main"

@@ -1,5 +1,13 @@
 \documentclass[10pt,twocolumn]{article}
 
+\usepackage{iftex}
+\ifTUTeX
+  \usepackage{fontspec}
+\else
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{lmodern}
+\fi
 \usepackage[a4paper,margin=1.75cm,columnsep=0.65cm]{geometry}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{booktabs}
@@ -19,8 +27,8 @@
 \title{\Large\bfseries Self-Indexed Sparse SwiGLU: Zero-Training Coarse-to-Fine Routing,\\Negative-Overhead Mixed-Precision Storage, and Pre-Attention PCIe~5.0 Prefetching}
 
 \author{
-  \textbf{FFMod Systems \& ML Research}\\
-  \texttt{ffmod v0.2.0 Open-Source Engine}
+  \textbf{Ferenc Frész}\\
+  \href{mailto:ferenc.fresz@gmail.com}{\texttt{ferenc.fresz@gmail.com}} $\cdot$ \href{https://github.com/ferencfresz/ffmod01}{\texttt{github.com/ferencfresz/ffmod01}}
 }
 \date{November 2026}
 
@@ -248,7 +256,7 @@ We evaluate the tiered PCIe~5.0 engine on full 64-layer \texttt{Qwen2.5-32B-Inst
 (1)~\emph{Superior Large-Model Sparsity Resilience:} Across all 32 multi-domain teacher-forced evaluation steps, every FFMod mode achieves \textbf{$100.0\%$ Top-1 agreement} with the full dense \texttt{FP8} model and remarkably low KL divergence ($\mathrm{KL}=0.0139$ in \texttt{pre\_attn\_exact\_delta}, $\mathrm{KL}=0.0168$ in \texttt{pre\_attn} $65/75\%$, and $\mathrm{KL}=0.0424$ even at $75/80\%$ skip).
 (2)~\emph{92.6\% Core Prefetch Precision:} Across the 60 intra-block pre-attention layers, our $\lfloor 0.35 K\rfloor$ core achieves $90.5\%\text{--}99.2\%$ hit precision ($92.64\%$ overall mean; $73.34\%$ full-$K$ overlap), while layers~1 and 33---which look ahead across \emph{both} a preceding GPU FFN and Self-Attention---still retain $70.8\%\text{--}76.9\%$ core precision.
 (3)~\emph{$4.74\times\text{--}6.67\times$ Wall-Clock Speedup:} Under the 24~GB profile, \texttt{pre\_attn\_exact\_delta} ($3.84$~tok/s) outperforms synchronous UVA ($3.72$~tok/s) with lossless channel parity, while speculative \texttt{pre\_attn} reaches \textbf{$4.12\text{--}5.40$~tok/s ($5.09\times\text{--}6.67\times$ over dense \texttt{BF16} offload)}, cutting PCIe traffic by $88.4\%$ ($52.7 \to 6.12$~GB/token). Under the $15.60$~GB cap (where 33 INT4 indexes also reside on host UVA, penalizing dual-scan \texttt{exact\_delta}), single-scan \texttt{pre\_attn} sustains \textbf{$3.41\text{--}4.29$~tok/s ($4.32\times\text{--}5.43\times$)}.
-(4)~\emph{Budget-Independent Persistent Sharded Cache:} Because the canonical per-layer tuple (\texttt{w\_idx\_i32}, \texttt{w\_ch\_fp8}, scales) is invariant to runtime sparsity and VRAM placement, FFMod persists 64 atomic \texttt{safetensors} shards (\texttt{.ffmod\_cache\_v1}, $36.28$~GB vs.\ $65.54$~GB \texttt{BF16}, $1.81\times$ smaller on disk) using $<1.5$~GB peak VRAM, hydrating any GPU/DDR5 budget split bit-identically at $0.169$~s/layer ($\sim 10.8$~s for 64 layers on PCIe NVMe) with zero re-quantization.
+(4)~\emph{VRAM-First Auto Placement \& Budget-Independent Sharded Cache:} FFMod unifies pure in-VRAM and tiered execution behind an automatic VRAM-first allocator (\texttt{--tiered-vram-gb auto}) that places $100\%$ of layers in GDDR7 with zero host RAM usage whenever a model fits, spilling only excess layers to pinned DDR5. Moreover, because the canonical per-layer tuple (\texttt{w\_idx\_i32}, \texttt{w\_ch\_fp8}, scales) is invariant to runtime sparsity and VRAM placement, FFMod persists 64 atomic \texttt{safetensors} shards (\texttt{.ffmod\_cache\_v1}, $36.28$~GB vs.\ $65.54$~GB \texttt{BF16}, $1.81\times$ smaller on disk) using $<1.5$~GB peak VRAM, hydrating any GPU/DDR5 budget split bit-identically at $0.169$~s/layer ($\sim 10.8$~s for 64 layers on PCIe NVMe) with zero re-quantization.
 
 \section{Related Work}
 \label{sec:related}
