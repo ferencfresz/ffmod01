@@ -20,7 +20,7 @@ import time
 import uuid
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from ffmod.engine import FFModEngine
 
@@ -339,9 +339,9 @@ def cli_main() -> None:
     parser.add_argument("--max-cache-len", type=int, default=2048, help="Static KV-cache max sequence length")
     parser.add_argument(
         "--tiered-vram-gb",
-        type=float,
+        type=str,
         default=None,
-        help="Enable PCIe 5.0 Tiered GPU+DDR5 offloading capped to this GPU VRAM budget (GB), e.g. 22.0 or 16.0",
+        help="Enable smart GPU+DDR5 placement ('auto' to detect free GPU VRAM, or explicit GB cap e.g. 21.8 / 16.0)",
     )
     parser.add_argument(
         "--offload-mode",
@@ -369,13 +369,15 @@ def cli_main() -> None:
 
     late_sp = args.late_sparsity if (args.late_sparsity is not None and args.late_sparsity >= 0.0) else None
     if args.tiered_vram_gb is not None:
+        raw_budget = args.tiered_vram_gb.strip()
+        parsed_budget: Union[float, str] = "auto" if raw_budget.lower() == "auto" else float(raw_budget)
         print(
-            f"[ffmod-serve] Loading Tiered PCIe 5.0 model {args.model} | "
-            f"VRAM budget={args.tiered_vram_gb:.1f} GB | mode={args.offload_mode}"
+            f"[ffmod-serve] Loading Tiered/Auto model {args.model} | "
+            f"VRAM budget={parsed_budget} | mode={args.offload_mode}"
         )
         engine = FFModEngine.from_tiered(
             model_dir=args.model,
-            vram_budget_gb=args.tiered_vram_gb,
+            vram_budget_gb=parsed_budget,
             sparsity=args.sparsity,
             late_sparsity=late_sp,
             offload_mode=args.offload_mode,

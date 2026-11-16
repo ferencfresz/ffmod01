@@ -284,6 +284,8 @@ A 3. kísérlet (`Exp 3`) előrejelzését élesben valósítottuk meg és hitel
   * A `Qwen2.5-32B-Instruct` 64 rétegének teljes előindexelt gyorsítótára mindössze **`36.28 GB`** (`65.54 GB` sűrű BF16 helyett — **`1.81×` kisebb tárhelyigény!**), és *ugyanabból* a `.ffmod_cache_v1` könyvtárból zéró újraszámolással és bitpontos egyezéssel (`torch.equal`) hidratálja mind a `21.8 GB` VRAM profilt (`2` GPU + `62` DDR5 réteg), mind a szigorú `15.9 GB` VRAM profilt (`0` GPU + `64` DDR5 réteg, `33` kiszervezett INT4 indexszel).
   * **Betöltési sebesség (`results/exp9b_index_cache_32b.json`):** Megszüntettük a PyTorch CPU skalár `float8_e4m3fn` másolási szűk keresztmetszetét GPU-oldali összefűzéssel és folytonos `uint8` D2H DMA-val. Belső PCIe NVMe SSD-ről egy 32B réteg hidratálása pinned DDR5 + GDDR7 memóriába mindössze **`0.169 s/réteg` (`~10.8 s` mind a 64 FFN rétegre!**; `Qwen2.5-3B` 36 rétegén a teljes modellbetöltés `5.35 s -> 2.04 s`, a rétegbetöltés `4.8 s -> 1.5 s`, azaz **`3.2×` gyorsabb**). Külső, sávszélesség-korlátos (`~46.6 MB/s`) USB meghajtón is azonnal **`8.6 perccel` (`1532.3 s -> 1018.9 s`, `1.50×`)** rövidül a betöltés pusztán a kisebb adatméret miatt, az `--index-cache-dir` kapcsolóval pedig a `.ffmod_cache_v1` belső NVMe meghajtóra is helyezhető a `~11–15` másodperces indításhoz!
 
-* **Tudományos publikációk (LaTeX + PDF):**
+* **Tudományos publikációk és kézikönyvek:**
+  * Felhasználói kézikönyv: [`USER_GUIDE.md`](USER_GUIDE.md) (`--tiered-vram-gb auto` automatikus VRAM-első memóriakezeléssel)
+  * Rendszerarchitektúra kézikönyv: [`SYSTEM_GUIDE.md`](SYSTEM_GUIDE.md)
   * Angol nyelvű publikáció: [`paper/ffmod_paper_en.pdf`](paper/ffmod_paper_en.pdf) (forrás: [`paper/main.tex`](paper/main.tex))
   * Magyar nyelvű publikáció: [`paper/ffmod_paper_hu.pdf`](paper/ffmod_paper_hu.pdf) (forrás: [`paper/main_hu.tex`](paper/main_hu.tex))

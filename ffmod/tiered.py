@@ -843,7 +843,7 @@ def build_tiered_index_cache(
 @torch.no_grad()
 def load_tiered_causal_lm(
     model_dir: Union[str, Path],
-    vram_budget_gb: float = 21.5,
+    vram_budget_gb: Union[float, str] = "auto",
     sparsity: float = 0.65,
     late_sparsity: Optional[float] = 0.75,
     coord_d_ratio: float = 0.30,
@@ -964,25 +964,43 @@ def load_tiered_causal_lm(
 
     max_k_est = int(round(I * (1.0 - min(sparsity, late_sparsity or sparsity))))
     staging_and_scratch_bytes = (2 * max_k_est * 3 * H) + (64 * 1024 * 1024)  # double-buffer + scratch
-    budget_bytes = int(vram_budget_gb * 1e9)
+    if isinstance(vram_budget_gb, str):
+        if vram_budget_gb.strip().lower() == "auto":
+            free_bytes, _ = torch.cuda.mem_get_info(gpu_dev)
+            # Reserve 2.0 GB headroom for StaticCache KV-cache + temporary quantization buffers
+            budget_bytes = non_mlp_vram_bytes + max(0, free_bytes - int(2.0e9))
+            resolved_budget_gb = budget_bytes / 1e9
+        else:
+            resolved_budget_gb = float(vram_budget_gb)
+            budget_bytes = int(resolved_budget_gb * 1e9)
+    else:
+        resolved_budget_gb = float(vram_budget_gb)
+        budget_bytes = int(resolved_budget_gb * 1e9)
 
-    remaining_after_indexes = (
-        budget_bytes - non_mlp_vram_bytes - staging_and_scratch_bytes - (L * index_bytes_per_layer)
-    )
-    if remaining_after_indexes >= 0:
-        num_gpu_mlp_layers = max(0, min(L, int(remaining_after_indexes // fp8_payload_bytes_per_layer)))
-        gpu_layer_set = choose_interleaved_gpu_layers(L, num_gpu_mlp_layers)
+    full_gpu_bytes = non_mlp_vram_bytes + L * (index_bytes_per_layer + fp8_payload_bytes_per_layer) + (64 * 1024 * 1024)
+    if budget_bytes >= full_gpu_bytes:
+        num_gpu_mlp_layers = L
+        gpu_layer_set = set(range(L))
         gpu_index_set = set(range(L))
     else:
-        num_gpu_mlp_layers = 0
-        gpu_layer_set = set()
-        avail_for_idx = max(0, budget_bytes - non_mlp_vram_bytes - staging_and_scratch_bytes)
-        num_gpu_idx = max(0, min(L, int(avail_for_idx // index_bytes_per_layer)))
-        gpu_index_set = choose_interleaved_gpu_layers(L, num_gpu_idx)
+        remaining_after_indexes = (
+            budget_bytes - non_mlp_vram_bytes - staging_and_scratch_bytes - (L * index_bytes_per_layer)
+        )
+        if remaining_after_indexes >= 0:
+            num_gpu_mlp_layers = max(0, min(L, int(remaining_after_indexes // fp8_payload_bytes_per_layer)))
+            gpu_layer_set = choose_interleaved_gpu_layers(L, num_gpu_mlp_layers)
+            gpu_index_set = set(range(L))
+        else:
+            num_gpu_mlp_layers = 0
+            gpu_layer_set = set()
+            avail_for_idx = max(0, budget_bytes - non_mlp_vram_bytes - staging_and_scratch_bytes)
+            num_gpu_idx = max(0, min(L, int(avail_for_idx // index_bytes_per_layer)))
+            gpu_index_set = choose_interleaved_gpu_layers(L, num_gpu_idx)
     num_offload_layers = L - len(gpu_layer_set)
 
+    budget_tag = f"{resolved_budget_gb:.2f} GB (auto)" if isinstance(vram_budget_gb, str) and vram_budget_gb.strip().lower() == "auto" else f"{resolved_budget_gb:.2f} GB"
     print(
-        f"[ffmod-tiered] VRAM Budget = {vram_budget_gb:.2f} GB | Non-FFN GPU = {non_mlp_vram_bytes/1e9:.2f} GB | "
+        f"[ffmod-tiered] VRAM Budget = {budget_tag} | Non-FFN GPU = {non_mlp_vram_bytes/1e9:.2f} GB | "
         f"{L}x INT4 Indexes = {(L*index_bytes_per_layer)/1e9:.2f} GB ({len(gpu_index_set)}/{L} on GPU)\n"
         f"               -> Placing {len(gpu_layer_set)}/{L} FFN layers in GPU VRAM (FP8) and "
         f"{num_offload_layers}/{L} FFN layers in Pinned DDR5 RAM (PCIe 5.0 Prefetch)!"

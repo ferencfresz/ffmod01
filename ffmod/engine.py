@@ -14,7 +14,7 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -131,7 +131,7 @@ class FFModEngine:
     def from_tiered(
         cls,
         model_dir: str,
-        vram_budget_gb: float = 21.5,
+        vram_budget_gb: Union[float, str] = "auto",
         sparsity: float = 0.65,
         late_sparsity: Optional[float] = 0.75,
         offload_mode: str = "pre_attn_exact_delta",
