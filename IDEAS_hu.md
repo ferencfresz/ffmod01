@@ -1,4 +1,7 @@
-# Alkalmazási Területek, Határok és Továbbfejlesztési Ötletek (`ideas.md`)
+# Alkalmazási Területek, Határok és Továbbfejlesztési Ötletek (`IDEAS_hu.md`)
+
+🌐 **Nyelv / Language:** [🇬🇧 English (`IDEAS_en.md`)](IDEAS_en.md) | **🇭🇺 Magyar**  
+**Kapcsolódó dokumentumok:** [`README_hu.md`](README_hu.md) · [`USER_GUIDE_hu.md`](USER_GUIDE_hu.md) · [`SYSTEM_GUIDE_hu.md`](SYSTEM_GUIDE_hu.md) · [`EXPERIMENTAL_REPORT_hu.md`](EXPERIMENTAL_REPORT_hu.md) · **DOI:** [`10.5281/zenodo.24277071`](https://doi.org/10.5281/zenodo.24277071)
 
 Ez a dokumentum összefoglalja, hogy a súly-indexelt, dinamikus ritka végrehajtási paradigma (`Állapot -> Számítási terv -> Csak a szükséges csatornák`, `ffmod`) milyen valós ipari és kutatási területeken adja a legnagyobb előnyt, hol húzódnak a fizikai korlátai, és milyen következő generációs irányok építhetők rá.
 

@@ -1,6 +1,9 @@
 # Tudás Tárolása vs. Tudás Felhasználása: Dinamikus Súly-Indexelés és Natív Triton Ritka SwiGLU Motor (`Qwen2.5-3B`)
 
-**Kísérleti kutatási jelentés és GPU-kernel dokumentáció**
+**Kísérleti kutatási jelentés és GPU-kernel dokumentáció (`EXPERIMENTAL_REPORT_hu.md`)**  
+**Szerző:** Frész Ferenc (`ferenc.fresz@gmail.com`) · **DOI:** [`10.5281/zenodo.24277071`](https://doi.org/10.5281/zenodo.24277071)  
+🌐 **Nyelv / Language:** [🇬🇧 English (`EXPERIMENTAL_REPORT_en.md`)](EXPERIMENTAL_REPORT_en.md) | **🇭🇺 Magyar**  
+**Kapcsolódó dokumentumok:** [`README_hu.md`](README_hu.md) · [`USER_GUIDE_hu.md`](USER_GUIDE_hu.md) · [`SYSTEM_GUIDE_hu.md`](SYSTEM_GUIDE_hu.md) · [`IDEAS_hu.md`](IDEAS_hu.md)
 *Modell:* `Qwen/Qwen2.5-3B` (3.09B paraméter, 36 réteg, $d_{\text{model}}=2048$, $d_{\text{ff}}=11008$, `bfloat16`)
 *Hardver:* NVIDIA GeForce RTX 5090 Laptop GPU (Blackwell `SM 12.0`, 82 SM, 24 GB GDDR7, 64 MB L2 cache, PyTorch `2.15.0+cu132`, Triton `3.9.0`)
 
@@ -285,7 +288,7 @@ A 3. kísérlet (`Exp 3`) előrejelzését élesben valósítottuk meg és hitel
   * **Betöltési sebesség (`results/exp9b_index_cache_32b.json`):** Megszüntettük a PyTorch CPU skalár `float8_e4m3fn` másolási szűk keresztmetszetét GPU-oldali összefűzéssel és folytonos `uint8` D2H DMA-val. Belső PCIe NVMe SSD-ről egy 32B réteg hidratálása pinned DDR5 + GDDR7 memóriába mindössze **`0.169 s/réteg` (`~10.8 s` mind a 64 FFN rétegre!**; `Qwen2.5-3B` 36 rétegén a teljes modellbetöltés `5.35 s -> 2.04 s`, a rétegbetöltés `4.8 s -> 1.5 s`, azaz **`3.2×` gyorsabb**). Külső, sávszélesség-korlátos (`~46.6 MB/s`) USB meghajtón is azonnal **`8.6 perccel` (`1532.3 s -> 1018.9 s`, `1.50×`)** rövidül a betöltés pusztán a kisebb adatméret miatt, az `--index-cache-dir` kapcsolóval pedig a `.ffmod_cache_v1` belső NVMe meghajtóra is helyezhető a `~11–15` másodperces indításhoz!
 
 * **Tudományos publikációk és kézikönyvek (DOI: [`10.5281/zenodo.24277071`](https://doi.org/10.5281/zenodo.24277071)):**
-  * Felhasználói kézikönyv: [`USER_GUIDE.md`](USER_GUIDE.md) (`--tiered-vram-gb auto` automatikus VRAM-első memóriakezeléssel)
-  * Rendszerarchitektúra kézikönyv: [`SYSTEM_GUIDE.md`](SYSTEM_GUIDE.md)
+  * Felhasználói kézikönyv: [`USER_GUIDE_hu.md`](USER_GUIDE_hu.md) / [`USER_GUIDE_en.md`](USER_GUIDE_en.md) (`--tiered-vram-gb auto` automatikus VRAM-első memóriakezeléssel)
+  * Rendszerarchitektúra kézikönyv: [`SYSTEM_GUIDE_hu.md`](SYSTEM_GUIDE_hu.md) / [`SYSTEM_GUIDE_en.md`](SYSTEM_GUIDE_en.md)
   * Angol nyelvű publikáció: [`paper/ffmod_paper_en.pdf`](paper/ffmod_paper_en.pdf) (forrás: [`paper/main.tex`](paper/main.tex))
   * Magyar nyelvű publikáció: [`paper/ffmod_paper_hu.pdf`](paper/ffmod_paper_hu.pdf) (forrás: [`paper/main_hu.tex`](paper/main_hu.tex))
