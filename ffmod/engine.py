@@ -137,6 +137,8 @@ class FFModEngine:
         offload_mode: str = "pre_attn_exact_delta",
         max_cache_len: int = 2048,
         enable_cudagraph: bool = True,
+        use_index_cache: bool = True,
+        index_cache_dir: Optional[str] = None,
         device: str = "cuda",
     ) -> "FFModEngine":
         from ffmod.tiered import load_tiered_causal_lm
@@ -148,6 +150,8 @@ class FFModEngine:
             late_sparsity=late_sparsity,
             offload_mode=offload_mode,  # type: ignore[arg-type]
             enable_cross_layer_lookahead=True,
+            use_index_cache=use_index_cache,
+            index_cache_dir=index_cache_dir,
             device=device,
         )
         model._ffmod_config = {

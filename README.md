@@ -19,8 +19,9 @@ $$\text{Állapot} \;\longrightarrow\; \text{Számítási terv (Top-}D\text{ koor
    - **`payload_mode="bf16"`** (`6.99 GB` VRAM): Eredeti 16 bites pontosság, `96.2 µs/réteg` (`2.04×` FFN gyorsulás), **`134.6 tok/s`** (`1.47×`).
    - **`payload_mode="bitsplit12"`** (**`5.37 GB` VRAM — `-13%` kevesebb VRAM a sűrű BF16-nál, 0% extra memória!**): `FP8` (`gate+up`) + pontos `BF16` (`down_proj`), `83.2 µs/réteg` (`2.36×` FFN gyorsulás), **`86.6%` Top-1 egyezés**, **`143.6 tok/s`** (`1.57×`).
    - **`payload_mode="fp8"`** (**`4.56 GB` VRAM — `-26%` kevesebb VRAM a sűrű BF16-nál!**): `6 KB/csatorna` `float8_e4m3fn` olvasás, `67.7–81.3 µs/réteg` (`2.42×–2.90×` FFN gyorsulás; `80%` kihagyásnál `55.9 µs` = **`3.53×`**), **`143.9–155.2 tok/s`** (`1.57×–1.70×` teljes modell gyorsulás a `91.6 tok/s` sűrű bázis felett!).
-3. **`safetensors` Zero-Copy Szerializáció**:
-   - `save_indexed_safetensors` és `load_indexed_safetensors` (megosztott `lm_head`/`embed_tokens` súlyok és réteg-metaadatok megőrzésével).
+3. **Perzisztens Súlyindex Mentés és Visszatöltés (`safetensors` Zero-Copy & `.ffmod_cache_v1/`)**:
+   - **VRAM-rezidens modellekhez (`1B–14B`)**: `save_indexed_safetensors` és `load_indexed_safetensors` (megosztott `lm_head`/`embed_tokens` súlyok és réteg-metaadatok megőrzésével).
+   - **Rétegzett `32B–70B+` modellekhez (`build_tiered_index_cache` & automatikus `.ffmod_cache_v1/`)**: A `load_tiered_causal_lm` és az `ffmod-serve` az első betöltéskor automatikusan felépíti és rétegenként (`layer_000.safetensors` .. `layer_063.safetensors` + ujjlenyomat-ellenőrzött `manifest.json`) elmenti a kanonikus `Smooth-INT4 + FP8` súlyindex-gyorsítótárat (`Qwen2.5-32B`: `36.28 GB` a `65.54 GB` BF16 helyett, **`1.81×` kisebb tárhely!**). A gyorsítótár **teljesen független a futásidejű `vram_budget_gb` és `sparsity` paraméterektől**, így minden következő indításkor újrakvantálás nélkül streamelődik be (belső PCIe NVMe SSD-ről `0.17 s/réteg` = **`~10.8 s`** a 64 FFN rétegre; `Qwen2.5-3B` esetén `5.35 s -> 2.04 s` teljes modellbetöltés; külső meghajtón pedig `--index-cache-dir` kapcsolóval a gyors belső NVMe-re is irányítható!).
 4. **`vLLM` Plugin és OpenAI-kompatibilis Streaming Szerver (`ffmod-serve`)**:
    - `apply_ffmod_to_vllm(llm, ...)` adapter `vLLM` V0/V1 munkafolyamatokhoz (`MergedColumnParallelLinear` + `RowParallelLinear`, 2D `[num_tokens, H]` tenzorok).
    - Beépített OpenAI `/v1/chat/completions` és `/v1/completions` HTTP + `SSE` (`stream: true`) szerver `StaticCache` + `CUDAGraph` gyorsítással és valós idejű hardveres telemetriával.
@@ -39,24 +40,40 @@ $$\text{Állapot} \;\longrightarrow\; \text{Számítási terv (Top-}D\text{ koor
 # 2. OpenAI-kompatibilis lokális streaming szerver indítása (FP8 + KV-biztos hibrid ütemezés):
 .venv/bin/ffmod-serve --model Qwen/Qwen2.5-3B --payload fp8 --sparsity 0.55 --late-sparsity 0.75 --port 8000
 
-# 3. 32B+ (65.5 GB BF16) modell futtatása PCIe 5.0 Pre-Attention Prefetch-csel 16-22 GB VRAM korláttal:
+# 3. 32B+ (65.5 GB BF16) modell futtatása PCIe 5.0 Pre-Attention Prefetch-csel 16-22 GB VRAM korláttal
+#    (automatikusan használja vagy felépíti a perzisztens .ffmod_cache_v1/ súlyindexet; --index-cache-dir megadható):
 .venv/bin/ffmod-serve --model /run/media/r41nm4k3r/990PRO/models/Qwen2.5-32B-Instruct --tiered-vram-gb 21.8 --offload-mode pre_attn --sparsity 0.65 --late-sparsity 0.75 --port 8000
 ```
 
-### Python API példa
+### Python API példa (In-VRAM és 32B+ Rétegzett Perzisztens Index Cache)
 
 ```python
 import torch
 from transformers import AutoModelForCausalLM
-from ffmod import patch_model, save_indexed_safetensors
+from ffmod import (
+    build_tiered_index_cache,
+    load_indexed_safetensors,
+    load_tiered_causal_lm,
+    patch_model,
+    save_indexed_safetensors,
+)
 
+# A) VRAM-ban elférő modell (pl. 3B-14B): egyszeri indexelés + mentés egyetlen safetensors fájlba
 model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-3B", dtype=torch.bfloat16, device_map="cuda")
-
-# 1-soros tanításmentes indexelés (0% extra VRAM BitSplit-12 vagy ultra-gyors FP8 módban):
 patch_model(model, sparsity=0.55, late_sparsity=0.75, payload_mode="fp8")
-
-# Opcionális mentés azonnali zero-copy betöltéshez:
 save_indexed_safetensors(model, "checkpoints/qwen25_3b_ffmod_fp8.safetensors")
+
+# Későbbi azonnali visszatöltés újraszámolás nélkül:
+# model = AutoModelForCausalLM.from_config(config).to("cuda")
+# load_indexed_safetensors(model, "checkpoints/qwen25_3b_ffmod_fp8.safetensors", device="cuda")
+
+# B) 32B-70B+ modell (PCIe 5.0 Tiered): egyszeri előindexelés (<1.5 GB csúcs VRAM!) + azonnali betöltés bármilyen VRAM kerettel
+build_tiered_index_cache("/run/media/r41nm4k3r/990PRO/models/Qwen2.5-32B-Instruct")
+tiered_model, tokenizer, info = load_tiered_causal_lm(
+    "/run/media/r41nm4k3r/990PRO/models/Qwen2.5-32B-Instruct",
+    vram_budget_gb=21.8,   # Ugyanabból a .ffmod_cache_v1-ből 15.9 GB-tal is újraszámolás nélkül betölthető!
+    offload_mode="pre_attn_exact_delta",
+)
 ```
 
 ---

@@ -350,6 +350,17 @@ def cli_main() -> None:
         default="pre_attn_exact_delta",
         help="PCIe 5.0 offload mode when --tiered-vram-gb is set (default: pre_attn_exact_delta)",
     )
+    parser.add_argument(
+        "--index-cache-dir",
+        type=str,
+        default=None,
+        help="Optional directory for persistent Smooth-INT4 + FP8 layer cache (defaults to <model>/.ffmod_cache_v1)",
+    )
+    parser.add_argument(
+        "--no-index-cache",
+        action="store_true",
+        help="Disable reading/writing persistent Smooth-INT4 + FP8 layer cache",
+    )
     parser.add_argument("--cache-dir", type=str, default=None, help="Optional HuggingFace cache directory")
     parser.add_argument("--local-files-only", action="store_true", help="Load strictly from local HF cache")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
@@ -369,6 +380,8 @@ def cli_main() -> None:
             late_sparsity=late_sp,
             offload_mode=args.offload_mode,
             max_cache_len=args.max_cache_len,
+            use_index_cache=not args.no_index_cache,
+            index_cache_dir=args.index_cache_dir,
         )
     else:
         print(

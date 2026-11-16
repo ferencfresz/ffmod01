@@ -21,6 +21,8 @@ from __future__ import annotations
 import ctypes
 import gc
 import json
+import os
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
@@ -29,6 +31,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import triton
 from safetensors import safe_open
+from safetensors.torch import save_file
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
 from ffmod.layers import FP8_MAX, ActMode, IndexedSwiGLULayer, detect_act_mode
@@ -242,7 +245,7 @@ class TieredOffloadSwiGLULayer(nn.Module):
         layer.host_w_ch_fp8.zero_()
         layer.ch_scales.zero_()
 
-        # 1. Process W_gate on GPU -> col_gate, rg, Qg, host_w_ch_fp8[:, 0, :]
+        # 1. Process W_gate on GPU -> col_gate, rg, Qg, Wg_fp8
         Wg = w_gate.to(device=gpu_dev, dtype=torch.float32)
         col_gate = Wg.pow(2).mean(dim=0).sqrt().sqrt().clamp(min=1e-5)
         Wg_norm = Wg / col_gate[None, :]
@@ -252,12 +255,11 @@ class TieredOffloadSwiGLULayer(nn.Module):
 
         sg = (Wg.abs().amax(dim=1) / FP8_MAX).clamp(min=1e-12)
         Wg_fp8 = (Wg / sg[:, None]).clamp(-FP8_MAX, FP8_MAX).to(torch.float8_e4m3fn)
-        layer.host_w_ch_fp8[:I, 0, :].copy_(Wg_fp8.cpu())
         layer.ch_scales[:I, 0].copy_(sg)
         layer.col_gate_smooth.copy_(col_gate)
-        del Wg, Wg_fp8, col_gate, sg
+        del Wg, col_gate, sg
 
-        # 2. Process W_up on GPU -> col_up, ru, Qu, host_w_ch_fp8[:, 1, :]
+        # 2. Process W_up on GPU -> col_up, ru, Qu, Wu_fp8
         Wu = w_up.to(device=gpu_dev, dtype=torch.float32)
         col_up = Wu.pow(2).mean(dim=0).sqrt().sqrt().clamp(min=1e-5)
         Wu_norm = Wu / col_up[None, :]
@@ -267,10 +269,9 @@ class TieredOffloadSwiGLULayer(nn.Module):
 
         su = (Wu.abs().amax(dim=1) / FP8_MAX).clamp(min=1e-12)
         Wu_fp8 = (Wu / su[:, None]).clamp(-FP8_MAX, FP8_MAX).to(torch.float8_e4m3fn)
-        layer.host_w_ch_fp8[:I, 1, :].copy_(Wu_fp8.cpu())
         layer.ch_scales[:I, 1].copy_(su)
         layer.col_up_smooth.copy_(col_up)
-        del Wu, Wu_fp8, col_up, su
+        del Wu, col_up, su
 
         # Pack Smooth-INT4 Index on GPU
         if pad_rows > 0:
@@ -281,7 +282,7 @@ class TieredOffloadSwiGLULayer(nn.Module):
         layer.w_idx_i32.copy_(w_idx_i32.cpu() if host_index else w_idx_i32)
         del Qg, Qu, packed_u8, w_idx_i32
 
-        # 3. Process W_down on GPU -> col_down, host_w_ch_fp8[:, 2, :]
+        # 3. Process W_down on GPU -> col_down, Wd_fp8, then ONE contiguous D2H DMA into Pinned DDR5!
         Wd = w_down.to(device=gpu_dev, dtype=torch.float32)  # [H, I]
         col_down = Wd.pow(2).sum(dim=0).sqrt()
         Wd_t = Wd.t().contiguous()
@@ -289,9 +290,13 @@ class TieredOffloadSwiGLULayer(nn.Module):
 
         sd = (Wd_t.abs().amax(dim=1) / FP8_MAX).clamp(min=1e-12)
         Wd_fp8 = (Wd_t / sd[:, None]).clamp(-FP8_MAX, FP8_MAX).to(torch.float8_e4m3fn)
-        layer.host_w_ch_fp8[:I, 2, :].copy_(Wd_fp8.cpu())
         layer.ch_scales[:I, 2].copy_(sd)
-        del Wd_t, Wd_fp8, sd
+        del Wd_t, sd
+
+        w_ch_gpu = torch.stack([Wg_fp8, Wu_fp8, Wd_fp8], dim=1).contiguous()
+        del Wg_fp8, Wu_fp8, Wd_fp8
+        layer.host_w_ch_fp8[:I].view(torch.uint8).copy_(w_ch_gpu.view(torch.uint8))
+        del w_ch_gpu
 
         scale_prod = torch.zeros(2 * I_pad, dtype=torch.float32, device=gpu_dev)
         scale_prod[:I] = rg
@@ -299,6 +304,59 @@ class TieredOffloadSwiGLULayer(nn.Module):
         layer.scale_prod.copy_(scale_prod)
         del rg, ru, col_down, scale_prod
 
+        torch.cuda.synchronize(gpu_dev)
+        return layer
+
+    def to_fp8_cache_dict(self) -> Dict[str, torch.Tensor]:
+        return {
+            "w_idx_i32": self.w_idx_i32.detach().cpu().contiguous(),
+            "w_ch_fp8": self.host_w_ch_fp8.detach().contiguous(),
+            "ch_scales": self.ch_scales.detach().cpu().contiguous(),
+            "col_gate_smooth": self.col_gate_smooth.detach().cpu().contiguous(),
+            "col_up_smooth": self.col_up_smooth.detach().cpu().contiguous(),
+            "scale_prod": self.scale_prod.detach().cpu().contiguous(),
+        }
+
+    @classmethod
+    @torch.no_grad()
+    def from_fp8_safetensors(
+        cls,
+        shard_path: Union[str, Path],
+        hidden_size: int,
+        intermediate_size: int,
+        sparsity: float = 0.70,
+        coord_d: Optional[int] = None,
+        act_mode: ActMode = "silu",
+        offload_mode: OffloadMode = "pre_attn_exact_delta",
+        buf_slot: int = 0,
+        pcie_sms: int = 12,
+        host_index: bool = False,
+        device: Union[str, torch.device] = "cuda",
+    ) -> "TieredOffloadSwiGLULayer":
+        gpu_dev = torch.device(device)
+        layer = cls(
+            hidden_size=hidden_size,
+            intermediate_size=intermediate_size,
+            sparsity=sparsity,
+            coord_d=coord_d,
+            act_mode=act_mode,
+            offload_mode=offload_mode,
+            buf_slot=buf_slot,
+            pcie_sms=pcie_sms,
+            host_index=host_index,
+            device=gpu_dev,
+        )
+        with safe_open(str(shard_path), framework="pt", device="cpu") as sf:
+            w_ch_cpu = sf.get_tensor("w_ch_fp8")
+            layer.host_w_ch_fp8.view(torch.uint8).copy_(w_ch_cpu.view(torch.uint8))
+            del w_ch_cpu
+            w_idx_cpu = sf.get_tensor("w_idx_i32")
+            layer.w_idx_i32.copy_(w_idx_cpu if host_index else w_idx_cpu.to(device=gpu_dev, non_blocking=True))
+            del w_idx_cpu
+            layer.ch_scales.copy_(sf.get_tensor("ch_scales").to(device=gpu_dev, non_blocking=True))
+            layer.col_gate_smooth.copy_(sf.get_tensor("col_gate_smooth").to(device=gpu_dev, non_blocking=True))
+            layer.col_up_smooth.copy_(sf.get_tensor("col_up_smooth").to(device=gpu_dev, non_blocking=True))
+            layer.scale_prod.copy_(sf.get_tensor("scale_prod").to(device=gpu_dev, non_blocking=True))
         torch.cuda.synchronize(gpu_dev)
         return layer
 
@@ -676,6 +734,112 @@ def set_tiered_mode(
     install_tiered_prefetch_hooks(model, enable_cross_layer_lookahead=enable_cross_layer_lookahead)
 
 
+def _compute_source_fingerprint(model_path: Path, weight_map: Dict[str, str]) -> List[Tuple[str, int]]:
+    shards = sorted(set(weight_map.values()))
+    return [(s, int((model_path / s).stat().st_size)) for s in shards]
+
+
+def _save_layer_shard_atomic(cache_dir: Path, idx: int, tensors: Dict[str, torch.Tensor]) -> Path:
+    shard_path = cache_dir / f"layer_{idx:03d}.safetensors"
+    tmp_path = cache_dir / f"layer_{idx:03d}.safetensors.tmp.{os.getpid()}"
+    save_file(tensors, str(tmp_path), metadata={"format": "ffmod.layer_cache.v1", "layer_idx": str(idx)})
+    os.replace(str(tmp_path), str(shard_path))
+    return shard_path
+
+
+@torch.no_grad()
+def build_tiered_index_cache(
+    model_dir: Union[str, Path],
+    cache_dir: Optional[Union[str, Path]] = None,
+    device: str = "cuda",
+) -> Path:
+    """
+    Offline / one-shot pre-indexer for arbitrarily large HuggingFace models (e.g. 32B / 70B+):
+    Builds `<model_dir>/.ffmod_cache_v1/layer_XXX.safetensors` one layer at a time using < 1.5 GB
+    peak GPU VRAM and < 1.5 GB peak Host RAM so subsequent `load_tiered_causal_lm` startups skip
+    all quantization and stream directly into VRAM + Pinned DDR5 at NVMe speed!
+    """
+    model_path = Path(model_dir)
+    out_dir = Path(cache_dir) if cache_dir is not None else (model_path / ".ffmod_cache_v1")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    gpu_dev = torch.device(device)
+
+    config = AutoConfig.from_pretrained(str(model_path), local_files_only=True)
+    L = int(config.num_hidden_layers)
+    H = int(config.hidden_size)
+    I = int(config.intermediate_size)
+    act_str = str(getattr(config, "hidden_act", "silu")).lower()
+    act_mode: ActMode = "gelu_tanh" if "gelu" in act_str else "silu"
+
+    index_json = model_path / "model.safetensors.index.json"
+    if index_json.exists():
+        weight_map: Dict[str, str] = json.loads(index_json.read_text())["weight_map"]
+    else:
+        single_sf = model_path / "model.safetensors"
+        with safe_open(str(single_sf), framework="pt", device="cpu") as f:
+            weight_map = {k: "model.safetensors" for k in f.keys()}
+
+    fingerprint = _compute_source_fingerprint(model_path, weight_map)
+    manifest_path = out_dir / "manifest.json"
+    if manifest_path.exists():
+        try:
+            mf = json.loads(manifest_path.read_text())
+            if (
+                mf.get("format") == "ffmod.layer_cache.v1"
+                and mf.get("source_fingerprint") == [list(x) for x in fingerprint]
+                and all((out_dir / f"layer_{i:03d}.safetensors").exists() for i in range(L))
+            ):
+                print(f"[ffmod-cache] Verified complete index cache at {out_dir} ({L} layers).")
+                return out_dir
+        except Exception:
+            pass
+
+    open_handles: Dict[str, Any] = {}
+
+    def get_tensor_cpu(tensor_key: str) -> torch.Tensor:
+        fname = weight_map[tensor_key]
+        if fname not in open_handles:
+            if len(open_handles) >= 3:
+                del open_handles[next(iter(open_handles))]
+            open_handles[fname] = safe_open(str(model_path / fname), framework="pt", device="cpu")
+        return open_handles[fname].get_tensor(tensor_key)
+
+    t0 = time.perf_counter()
+    print(f"[ffmod-cache] Building persistent Smooth-INT4 + FP8 layer cache -> {out_dir} ({L} layers)...")
+    for idx in range(L):
+        shard_path = out_dir / f"layer_{idx:03d}.safetensors"
+        if shard_path.exists():
+            continue
+        prefix = f"model.layers.{idx}.mlp"
+        wg = get_tensor_cpu(f"{prefix}.gate_proj.weight")
+        wu = get_tensor_cpu(f"{prefix}.up_proj.weight")
+        wd = get_tensor_cpu(f"{prefix}.down_proj.weight")
+        tmp_layer = TieredOffloadSwiGLULayer.from_weights(
+            w_gate=wg, w_up=wu, w_down=wd, act_mode=act_mode, host_index=True, device=gpu_dev
+        )
+        _save_layer_shard_atomic(out_dir, idx, tmp_layer.to_fp8_cache_dict())
+        tmp_layer.host_w_ch_fp8 = None  # type: ignore[assignment]
+        tmp_layer.w_idx_i32 = None  # type: ignore[assignment]
+        del wg, wu, wd, tmp_layer
+        if (idx + 1) % 8 == 0 or idx == L - 1:
+            gc.collect()
+            torch.cuda.empty_cache()
+            print(f"              Cached {idx + 1:2d}/{L} layers ({time.perf_counter() - t0:.1f}s)...")
+
+    open_handles.clear()
+    manifest_data = {
+        "format": "ffmod.layer_cache.v1",
+        "num_layers": L,
+        "hidden_size": H,
+        "intermediate_size": I,
+        "act_mode": act_mode,
+        "source_fingerprint": [list(x) for x in fingerprint],
+    }
+    manifest_path.write_text(json.dumps(manifest_data, indent=2))
+    print(f"[ffmod-cache] Completed {L}-layer cache in {time.perf_counter() - t0:.2f}s -> {out_dir}")
+    return out_dir
+
+
 @torch.no_grad()
 def load_tiered_causal_lm(
     model_dir: Union[str, Path],
@@ -685,6 +849,8 @@ def load_tiered_causal_lm(
     coord_d_ratio: float = 0.30,
     offload_mode: OffloadMode = "pre_attn_exact_delta",
     enable_cross_layer_lookahead: bool = True,
+    use_index_cache: bool = True,
+    index_cache_dir: Optional[Union[str, Path]] = None,
     device: str = "cuda",
 ) -> Tuple[nn.Module, Any, Dict[str, Any]]:
     """
@@ -827,46 +993,130 @@ def load_tiered_causal_lm(
     offload_indices = [i for i in range(L) if i not in gpu_layer_set]
     offload_slot_map = {idx: pos % 2 for pos, idx in enumerate(offload_indices)}
 
+    # Resolve persistent per-layer index cache (`<model_dir>/.ffmod_cache_v1` by default)
+    fingerprint = _compute_source_fingerprint(model_path, weight_map)
+    cache_dir: Optional[Path] = None
+    can_write_cache = False
+    cache_valid = False
+    if use_index_cache:
+        cache_dir = Path(index_cache_dir) if index_cache_dir is not None else (model_path / ".ffmod_cache_v1")
+        manifest_path = cache_dir / "manifest.json"
+        if manifest_path.exists():
+            try:
+                mf = json.loads(manifest_path.read_text())
+                if mf.get("format") == "ffmod.layer_cache.v1" and mf.get("source_fingerprint") == [
+                    list(x) for x in fingerprint
+                ]:
+                    cache_valid = all((cache_dir / f"layer_{i:03d}.safetensors").exists() for i in range(L))
+            except Exception:
+                cache_valid = False
+        if not cache_valid:
+            try:
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                probe = cache_dir / f".write_test_{os.getpid()}"
+                probe.write_text("ok")
+                probe.unlink()
+                can_write_cache = True
+            except OSError:
+                can_write_cache = False
+
+    if cache_valid and cache_dir is not None:
+        print(f"[ffmod-tiered] CACHE HIT! Streaming pre-built Smooth-INT4 + FP8 layers from {cache_dir}...")
+    elif can_write_cache and cache_dir is not None:
+        print(f"[ffmod-tiered] Cache miss -> building & saving persistent layer cache into {cache_dir}...")
+
     # Build GPU-resident FFN layers FIRST while maximum free VRAM headroom is available for temp FP32 quantization!
+    t_layers0 = time.perf_counter()
     build_order = sorted(gpu_layer_set) + offload_indices
+    cached_loads = 0
     for done_count, idx in enumerate(build_order, start=1):
-        prefix = f"model.layers.{idx}.mlp"
-        wg = get_tensor_cpu(f"{prefix}.gate_proj.weight")
-        wu = get_tensor_cpu(f"{prefix}.up_proj.weight")
-        wd = get_tensor_cpu(f"{prefix}.down_proj.weight")
         layer_sp = float(late_sparsity) if (late_sparsity is not None and idx >= late_start) else float(sparsity)
+        shard_path = (cache_dir / f"layer_{idx:03d}.safetensors") if cache_dir is not None else None
+        use_shard = bool(use_index_cache and shard_path is not None and shard_path.exists() and (cache_valid or can_write_cache))
 
-        if idx in gpu_layer_set:
-            blocks[idx].mlp = IndexedSwiGLULayer.from_weights(
-                w_gate=wg,
-                w_up=wu,
-                w_down=wd,
-                sparsity=layer_sp,
-                coord_d=coord_d,
-                payload_mode="fp8",
-                act_mode=act_modes[idx],
-                device=gpu_dev,
-            )
-            torch.cuda.empty_cache()
+        if use_shard and shard_path is not None:
+            cached_loads += 1
+            if idx in gpu_layer_set:
+                blocks[idx].mlp = IndexedSwiGLULayer.from_fp8_safetensors(
+                    shard_path=str(shard_path),
+                    hidden_size=H,
+                    intermediate_size=I,
+                    sparsity=layer_sp,
+                    coord_d=coord_d,
+                    act_mode=act_modes[idx],
+                    device=gpu_dev,
+                )
+            else:
+                blocks[idx].mlp = TieredOffloadSwiGLULayer.from_fp8_safetensors(
+                    shard_path=shard_path,
+                    hidden_size=H,
+                    intermediate_size=I,
+                    sparsity=layer_sp,
+                    coord_d=coord_d,
+                    act_mode=act_modes[idx],
+                    offload_mode=offload_mode,
+                    buf_slot=offload_slot_map[idx],
+                    host_index=(idx not in gpu_index_set),
+                    device=gpu_dev,
+                )
         else:
-            blocks[idx].mlp = TieredOffloadSwiGLULayer.from_weights(
-                w_gate=wg,
-                w_up=wu,
-                w_down=wd,
-                sparsity=layer_sp,
-                coord_d=coord_d,
-                act_mode=act_modes[idx],
-                offload_mode=offload_mode,
-                buf_slot=offload_slot_map[idx],
-                host_index=(idx not in gpu_index_set),
-                device=gpu_dev,
-            )
+            prefix = f"model.layers.{idx}.mlp"
+            wg = get_tensor_cpu(f"{prefix}.gate_proj.weight")
+            wu = get_tensor_cpu(f"{prefix}.up_proj.weight")
+            wd = get_tensor_cpu(f"{prefix}.down_proj.weight")
 
-        del wg, wu, wd
+            if idx in gpu_layer_set:
+                built_gpu = IndexedSwiGLULayer.from_weights(
+                    w_gate=wg,
+                    w_up=wu,
+                    w_down=wd,
+                    sparsity=layer_sp,
+                    coord_d=coord_d,
+                    payload_mode="fp8",
+                    act_mode=act_modes[idx],
+                    device=gpu_dev,
+                )
+                if can_write_cache and cache_dir is not None:
+                    _save_layer_shard_atomic(cache_dir, idx, built_gpu.to_fp8_cache_dict())
+                blocks[idx].mlp = built_gpu
+                torch.cuda.empty_cache()
+            else:
+                built_off = TieredOffloadSwiGLULayer.from_weights(
+                    w_gate=wg,
+                    w_up=wu,
+                    w_down=wd,
+                    sparsity=layer_sp,
+                    coord_d=coord_d,
+                    act_mode=act_modes[idx],
+                    offload_mode=offload_mode,
+                    buf_slot=offload_slot_map[idx],
+                    host_index=(idx not in gpu_index_set),
+                    device=gpu_dev,
+                )
+                if can_write_cache and cache_dir is not None:
+                    _save_layer_shard_atomic(cache_dir, idx, built_off.to_fp8_cache_dict())
+                blocks[idx].mlp = built_off
+
+            del wg, wu, wd
+
         if done_count % 8 == 0 or done_count == L:
             gc.collect()
             torch.cuda.empty_cache()
-            print(f"               Indexed {done_count:2d}/{L} layers...")
+            tag = "Loaded cached" if cached_loads == done_count else "Indexed"
+            print(f"               {tag} {done_count:2d}/{L} layers ({time.perf_counter() - t_layers0:.1f}s)...")
+
+    if can_write_cache and cache_dir is not None and not cache_valid:
+        if all((cache_dir / f"layer_{i:03d}.safetensors").exists() for i in range(L)):
+            manifest_data = {
+                "format": "ffmod.layer_cache.v1",
+                "num_layers": L,
+                "hidden_size": H,
+                "intermediate_size": I,
+                "act_mode": act_modes[0] if act_modes else "silu",
+                "source_fingerprint": [list(x) for x in fingerprint],
+            }
+            (cache_dir / "manifest.json").write_text(json.dumps(manifest_data, indent=2))
+            print(f"[ffmod-tiered] Saved complete {L}-layer persistent index cache -> {cache_dir}")
 
     open_handles.clear()
     gc.collect()
@@ -902,6 +1152,8 @@ def load_tiered_causal_lm(
         "sparsity": sparsity,
         "late_sparsity": late_sparsity,
         "coord_d": coord_d,
+        "index_cache_hit": bool(cached_loads == L),
+        "index_cache_dir": str(cache_dir) if cache_dir is not None else None,
     }
     model._ffmod_tiered_summary = summary
     print(

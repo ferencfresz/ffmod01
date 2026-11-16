@@ -13,6 +13,7 @@ from ffmod.patcher import find_convertible_mlps, model_storage_bytes, patch_mode
 from ffmod.server import FFModOpenAIDispatcher, create_http_server
 from ffmod.tiered import (
     TieredOffloadSwiGLULayer,
+    build_tiered_index_cache,
     install_tiered_prefetch_hooks,
     load_tiered_causal_lm,
     release_tiered_model,
@@ -41,6 +42,7 @@ __all__ = [
     "patch_vllm_model",
     "apply_ffmod_to_vllm",
     "TieredOffloadSwiGLULayer",
+    "build_tiered_index_cache",
     "install_tiered_prefetch_hooks",
     "load_tiered_causal_lm",
     "release_tiered_model",

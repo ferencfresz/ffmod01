@@ -7,7 +7,7 @@ from dynamic ahead-of-time compute planning (`Top-D` coords -> `INT4` scan -> `T
 
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -262,6 +262,55 @@ class IndexedSwiGLULayer(nn.Module):
         if target_dev.type == "cuda":
             ensure_scratch_capacity(target_dev, layer.max_sparse_tokens, layer.H, layer.I_pad)
 
+        return layer
+
+    def to_fp8_cache_dict(self) -> Dict[str, torch.Tensor]:
+        if self.payload_mode != "fp8":
+            raise ValueError("`to_fp8_cache_dict` requires `payload_mode == 'fp8'`")
+        return {
+            "w_idx_i32": self.w_idx_i32.detach().cpu().contiguous(),
+            "w_ch_fp8": self.w_ch_fp8.detach().cpu().contiguous(),
+            "ch_scales": self.ch_scales.detach().cpu().contiguous(),
+            "col_gate_smooth": self.col_gate_smooth.detach().cpu().contiguous(),
+            "col_up_smooth": self.col_up_smooth.detach().cpu().contiguous(),
+            "scale_prod": self.scale_prod.detach().cpu().contiguous(),
+        }
+
+    @classmethod
+    @torch.no_grad()
+    def from_fp8_safetensors(
+        cls,
+        shard_path: str,
+        hidden_size: int,
+        intermediate_size: int,
+        sparsity: float = 0.65,
+        coord_d: Optional[int] = None,
+        act_mode: ActMode = "silu",
+        max_sparse_tokens: int = 8,
+        device: Union[str, torch.device] = "cuda",
+    ) -> "IndexedSwiGLULayer":
+        from safetensors import safe_open
+
+        target_dev = torch.device(device)
+        dev_str = str(target_dev)
+        layer = cls(
+            hidden_size=hidden_size,
+            intermediate_size=intermediate_size,
+            sparsity=sparsity,
+            coord_d=coord_d,
+            payload_mode="fp8",
+            act_mode=act_mode,
+            max_sparse_tokens=max_sparse_tokens,
+        ).to(target_dev)
+        with safe_open(str(shard_path), framework="pt", device=dev_str) as sf:
+            layer.w_idx_i32.copy_(sf.get_tensor("w_idx_i32"))
+            layer.w_ch_fp8.copy_(sf.get_tensor("w_ch_fp8"))
+            layer.ch_scales.copy_(sf.get_tensor("ch_scales"))
+            layer.col_gate_smooth.copy_(sf.get_tensor("col_gate_smooth"))
+            layer.col_up_smooth.copy_(sf.get_tensor("col_up_smooth"))
+            layer.scale_prod.copy_(sf.get_tensor("scale_prod"))
+        if target_dev.type == "cuda":
+            ensure_scratch_capacity(target_dev, layer.max_sparse_tokens, layer.H, layer.I_pad)
         return layer
 
     @classmethod
