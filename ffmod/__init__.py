@@ -14,6 +14,7 @@ from ffmod.server import FFModOpenAIDispatcher, create_http_server
 from ffmod.tiered import (
     TieredOffloadSwiGLULayer,
     build_tiered_index_cache,
+    export_standalone_tiered_model,
     install_tiered_prefetch_hooks,
     load_tiered_causal_lm,
     release_tiered_model,
@@ -43,6 +44,7 @@ __all__ = [
     "apply_ffmod_to_vllm",
     "TieredOffloadSwiGLULayer",
     "build_tiered_index_cache",
+    "export_standalone_tiered_model",
     "install_tiered_prefetch_hooks",
     "load_tiered_causal_lm",
     "release_tiered_model",

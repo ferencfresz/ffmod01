@@ -256,7 +256,7 @@ FFMod provides two complementary persistence mechanisms so `Smooth-INT4` weight 
       # cache_dir="/fast_internal_nvme/qwen32b_ffmod_cache",
   )
   ```
-* **100% Budget Independence:** A single `.ffmod_cache_v1` directory (`36.28 GB` vs. `65.54 GB` BF16 — **45% smaller on disk!**) hydrates any `--tiered-vram-gb` (`auto`, `21.8`, `15.9`), `--sparsity`, and `--offload-mode` combination bit-identically (`~10.8 s` for 64 layers from internal PCIe NVMe SSD) with zero re-quantization!
+* **100% Budget Independence & Standalone Export (`export_standalone_tiered_model`):** A single `.ffmod_cache_v1` directory (`36.28 GB` vs. `65.54 GB` BF16) hydrates any `--tiered-vram-gb` (`auto`, `21.8`, `15.9`), `--sparsity`, and `--offload-mode` combination bit-identically with zero re-quantization! Moreover, `export_standalone_tiered_model(src_dir, dst_dir)` exports a self-contained **`47.46 GB` 32B checkpoint** (tokenizer + `11.17 GB` non-MLP + `36.28 GB` `.ffmod_cache_v1`, saving `54.4 GB` over keeping dense BF16 + cache) that loads on internal PCIe NVMe in **`26.25 s` cold** and **`14.38 s` warm (including 64-layer `CUDAGraph` capture — `58×–107×` faster)!**
 
 ### 7.2. Single-File `safetensors` Serialization (`1B–14B` In-VRAM Models)
 ```python

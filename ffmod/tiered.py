@@ -22,6 +22,7 @@ import ctypes
 import gc
 import json
 import os
+import shutil
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
@@ -332,6 +333,7 @@ class TieredOffloadSwiGLULayer(nn.Module):
         pcie_sms: int = 12,
         host_index: bool = False,
         device: Union[str, torch.device] = "cuda",
+        sync: bool = True,
     ) -> "TieredOffloadSwiGLULayer":
         gpu_dev = torch.device(device)
         layer = cls(
@@ -357,7 +359,8 @@ class TieredOffloadSwiGLULayer(nn.Module):
             layer.col_gate_smooth.copy_(sf.get_tensor("col_gate_smooth").to(device=gpu_dev, non_blocking=True))
             layer.col_up_smooth.copy_(sf.get_tensor("col_up_smooth").to(device=gpu_dev, non_blocking=True))
             layer.scale_prod.copy_(sf.get_tensor("scale_prod").to(device=gpu_dev, non_blocking=True))
-        torch.cuda.synchronize(gpu_dev)
+        if sync:
+            torch.cuda.synchronize(gpu_dev)
         return layer
 
     @torch.no_grad()
@@ -841,6 +844,173 @@ def build_tiered_index_cache(
 
 
 @torch.no_grad()
+def export_standalone_tiered_model(
+    source_model_dir: Union[str, Path],
+    target_model_dir: Union[str, Path],
+    source_cache_dir: Optional[Union[str, Path]] = None,
+    max_non_mlp_shard_gb: float = 4.0,
+    device: str = "cuda",
+) -> Path:
+    """
+    Exports a self-contained, compact FFMod checkpoint (`ffmod.standalone.v1`) onto a fast drive
+    (e.g., internal PCIe NVMe SSD) WITHOUT copying the bulky dense BF16 FFN weights!
+
+    Contains ONLY:
+      1. Tokenizer & HuggingFace `config.json` files
+      2. Non-MLP BF16 weights (`non_mlp_XXX.safetensors` + `model.safetensors.index.json`, ~11.2 GB on 32B)
+      3. Pre-built `.ffmod_cache_v1/layer_XXX.safetensors` (`Smooth-INT4 + FP8`, ~36.3 GB on 32B)
+
+    Total footprint on 32B is ~47.5 GB (instead of 65.5 GB dense + 36.3 GB cache = 101.8 GB!),
+    and loads directly via `load_tiered_causal_lm(target_model_dir)` or `ffmod-serve --model <target_model_dir>`.
+    """
+    src_path = Path(source_model_dir)
+    dst_path = Path(target_model_dir)
+    dst_path.mkdir(parents=True, exist_ok=True)
+    dst_cache = dst_path / ".ffmod_cache_v1"
+    dst_cache.mkdir(parents=True, exist_ok=True)
+
+    # 1. Ensure source `.ffmod_cache_v1` exists (reuses existing cache in O(1) if already built!)
+    src_cache = build_tiered_index_cache(src_path, cache_dir=source_cache_dir, device=device)
+
+    # 2. Copy config, tokenizer, vocab, merges, and generation metadata files
+    skip_names = {"model.safetensors", "model.safetensors.index.json"}
+    for item in sorted(src_path.iterdir()):
+        if not item.is_file() or item.name in skip_names or item.suffix == ".safetensors":
+            continue
+        dst_item = dst_path / item.name
+        if not dst_item.exists() or dst_item.stat().st_size != item.stat().st_size:
+            shutil.copy2(item, dst_item)
+
+    config = AutoConfig.from_pretrained(str(src_path), local_files_only=True)
+    L = int(config.num_hidden_layers)
+    H = int(config.hidden_size)
+    I = int(config.intermediate_size)
+    act_str = str(getattr(config, "hidden_act", "silu")).lower()
+    act_mode: ActMode = "gelu_tanh" if "gelu" in act_str else "silu"
+
+    # 3. Identify exact non-MLP parameter keys using zero-memory `meta` skeleton
+    src_index_json = src_path / "model.safetensors.index.json"
+    if src_index_json.exists():
+        src_weight_map: Dict[str, str] = json.loads(src_index_json.read_text())["weight_map"]
+    else:
+        single_sf = src_path / "model.safetensors"
+        with safe_open(str(single_sf), framework="pt", device="cpu") as f:
+            src_weight_map = {k: "model.safetensors" for k in f.keys()}
+
+    with torch.device("meta"):
+        meta_model = AutoModelForCausalLM.from_config(config, dtype=torch.bfloat16)
+    for blk in _find_decoder_layers(meta_model):
+        blk.mlp = nn.Identity()
+    non_mlp_keys = [
+        name for name, _ in meta_model.named_parameters(remove_duplicate=True) if name in src_weight_map
+    ]
+    del meta_model
+
+    # 4. Pack non-MLP BF16 tensors into bounded shards (`non_mlp_000.safetensors`, ...)
+    dst_index_json = dst_path / "model.safetensors.index.json"
+    t0 = time.perf_counter()
+    new_weight_map: Dict[str, str] = {}
+    need_non_mlp = True
+    if dst_index_json.exists():
+        try:
+            existing_idx = json.loads(dst_index_json.read_text())
+            wm = existing_idx.get("weight_map", {})
+            if set(wm.keys()) == set(non_mlp_keys) and all((dst_path / fn).exists() for fn in set(wm.values())):
+                new_weight_map = wm
+                need_non_mlp = False
+                print(f"[ffmod-export] Verified existing non-MLP shards in {dst_path}.")
+        except Exception:
+            need_non_mlp = True
+
+    if need_non_mlp:
+        print(f"[ffmod-export] Exporting {len(non_mlp_keys)} non-MLP tensors -> {dst_path}...")
+        open_handles: Dict[str, Any] = {}
+        max_shard_bytes = int(max_non_mlp_shard_gb * 1e9)
+        cur_tensors: Dict[str, torch.Tensor] = {}
+        cur_bytes = 0
+        shard_idx = 0
+        total_non_mlp_bytes = 0
+
+        def _flush_shard(s_idx: int, batch: Dict[str, torch.Tensor]) -> None:
+            shard_name = f"non_mlp_{s_idx:03d}.safetensors"
+            tmp_p = dst_path / f"{shard_name}.tmp.{os.getpid()}"
+            final_p = dst_path / shard_name
+            save_file(batch, str(tmp_p), metadata={"format": "ffmod.standalone.non_mlp.v1"})
+            os.replace(str(tmp_p), str(final_p))
+            for k in batch:
+                new_weight_map[k] = shard_name
+
+        for name in non_mlp_keys:
+            src_fname = src_weight_map[name]
+            if src_fname not in open_handles:
+                if len(open_handles) >= 2:
+                    del open_handles[next(iter(open_handles))]
+                open_handles[src_fname] = safe_open(str(src_path / src_fname), framework="pt", device="cpu")
+            t_cpu = open_handles[src_fname].get_tensor(name).to(torch.bfloat16).contiguous()
+            nbytes = t_cpu.numel() * t_cpu.element_size()
+            if cur_tensors and (cur_bytes + nbytes > max_shard_bytes):
+                _flush_shard(shard_idx, cur_tensors)
+                print(f"               Saved non_mlp_{shard_idx:03d}.safetensors ({cur_bytes/1e9:.2f} GB)...")
+                shard_idx += 1
+                cur_tensors = {}
+                cur_bytes = 0
+                gc.collect()
+            cur_tensors[name] = t_cpu
+            cur_bytes += nbytes
+            total_non_mlp_bytes += nbytes
+
+        if cur_tensors:
+            _flush_shard(shard_idx, cur_tensors)
+            print(f"               Saved non_mlp_{shard_idx:03d}.safetensors ({cur_bytes/1e9:.2f} GB)...")
+            cur_tensors.clear()
+        open_handles.clear()
+        gc.collect()
+
+        index_payload = {
+            "metadata": {
+                "format": "ffmod.standalone.v1",
+                "total_size": total_non_mlp_bytes,
+            },
+            "weight_map": new_weight_map,
+        }
+        dst_index_json.write_text(json.dumps(index_payload, indent=2))
+
+    # 5. Copy 64 pre-indexed `.ffmod_cache_v1/layer_XXX.safetensors` shards atomically & resumably
+    print(f"[ffmod-export] Copying {L} pre-indexed layer shards -> {dst_cache}...")
+    t_copy0 = time.perf_counter()
+    for idx in range(L):
+        s_file = src_cache / f"layer_{idx:03d}.safetensors"
+        d_file = dst_cache / f"layer_{idx:03d}.safetensors"
+        if d_file.exists() and d_file.stat().st_size == s_file.stat().st_size:
+            continue
+        tmp_d = dst_cache / f"layer_{idx:03d}.safetensors.tmp.{os.getpid()}"
+        with open(s_file, "rb") as fsrc, open(tmp_d, "wb") as fdst:
+            shutil.copyfileobj(fsrc, fdst, length=16 * 1024 * 1024)
+        os.replace(str(tmp_d), str(d_file))
+        if (idx + 1) % 8 == 0 or idx == L - 1:
+            print(f"               Copied {idx + 1:2d}/{L} layer shards ({time.perf_counter() - t_copy0:.1f}s)...")
+
+    # 6. Write updated manifest bound to the standalone non-MLP fingerprint
+    new_fingerprint = _compute_source_fingerprint(dst_path, new_weight_map)
+    manifest_data = {
+        "format": "ffmod.layer_cache.v1",
+        "standalone": True,
+        "num_layers": L,
+        "hidden_size": H,
+        "intermediate_size": I,
+        "act_mode": act_mode,
+        "source_fingerprint": [list(x) for x in new_fingerprint],
+    }
+    (dst_cache / "manifest.json").write_text(json.dumps(manifest_data, indent=2))
+    total_gb = sum(p.stat().st_size for p in dst_path.rglob("*") if p.is_file()) / 1e9
+    print(
+        f"[ffmod-export] Standalone export ready at {dst_path} ({total_gb:.2f} GB total, "
+        f"elapsed {time.perf_counter() - t0:.1f}s)!"
+    )
+    return dst_path
+
+
+@torch.no_grad()
 def load_tiered_causal_lm(
     model_dir: Union[str, Path],
     vram_budget_gb: Union[float, str] = "auto",
@@ -1013,6 +1183,18 @@ def load_tiered_causal_lm(
 
     # Resolve persistent per-layer index cache (`<model_dir>/.ffmod_cache_v1` by default)
     fingerprint = _compute_source_fingerprint(model_path, weight_map)
+    default_manifest = (model_path / ".ffmod_cache_v1" / "manifest.json")
+    if not use_index_cache and default_manifest.exists():
+        try:
+            if json.loads(default_manifest.read_text()).get("standalone") is True:
+                raise ValueError(
+                    f"{model_path} is a standalone FFMod checkpoint (dense FFN weights omitted); "
+                    "keep `use_index_cache=True`."
+                )
+        except ValueError:
+            raise
+        except Exception:
+            pass
     cache_dir: Optional[Path] = None
     can_write_cache = False
     cache_valid = False
@@ -1076,6 +1258,7 @@ def load_tiered_causal_lm(
                     buf_slot=offload_slot_map[idx],
                     host_index=(idx not in gpu_index_set),
                     device=gpu_dev,
+                    sync=False,
                 )
         else:
             prefix = f"model.layers.{idx}.mlp"
@@ -1137,6 +1320,7 @@ def load_tiered_causal_lm(
             print(f"[ffmod-tiered] Saved complete {L}-layer persistent index cache -> {cache_dir}")
 
     open_handles.clear()
+    torch.cuda.synchronize(gpu_dev)
     gc.collect()
     torch.cuda.empty_cache()
 

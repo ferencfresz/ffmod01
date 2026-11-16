@@ -256,7 +256,7 @@ Az FFMod két komplementer perzisztens mentési formátumot kínál, hogy a `Smo
       # cache_dir="/gyors_belso_nvme/qwen32b_ffmod_cache",
   )
   ```
-* **Teljes profilfüggetlenség:** Ugyanabból a `.ffmod_cache_v1` könyvtárból (`36.28 GB` a `65.54 GB` BF16 helyett — **45%-kal kisebb lemezterület!**) bármilyen `--tiered-vram-gb` (`auto`, `21.8`, `15.9`), `--sparsity` és `--offload-mode` kombináció újraszámolás nélkül, bitpontosan töltődik be (`~10.8 mp` 64 rétegre belső PCIe NVMe SSD-ről)!
+* **Teljes profilfüggetlenség és Önálló Kompakt Export (`export_standalone_tiered_model`):** Ugyanabból a `.ffmod_cache_v1` könyvtárból (`36.28 GB` a `65.54 GB` BF16 helyett) bármilyen `--tiered-vram-gb` (`auto`, `21.8`, `15.9`), `--sparsity` és `--offload-mode` kombináció újraszámolás nélkül, bitpontosan töltődik be! Ráadásul az `export_standalone_tiered_model(src_dir, dst_dir)` egyetlen önálló **`47.46 GB`-os 32B modellkönyvtárat** készít (tokenizer + `11.17 GB` Attention + `36.28 GB` `.ffmod_cache_v1`, megspórolva az `54.4 GB` sűrű BF16 FFN súlyt), amely belső PCIe NVMe SSD-ről **hidegen `26.25 mp`**, **melegen pedig `14.38 mp` alatt** (64 rétegű `CUDAGraph` rögzítéssel együtt — **`58×–107×` gyorsulás**!) elindul!
 
 ### 7.2. Egyfájlos `safetensors` Mentés (`1B–14B` In-VRAM modellekhez)
 ```python
