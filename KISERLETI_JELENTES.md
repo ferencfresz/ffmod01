@@ -250,4 +250,34 @@ A kutatási prototípust három egymásra épülő mérnöki mérföldkőben tel
 
 ### 9.3. `vLLM` Bővítmény és OpenAI-kompatibilis Lokális Streaming Szerver (`Milestone 3`)
 * **`ffmod.vllm_plugin` (`apply_ffmod_to_vllm`):** Közvetlenül beépül a `vLLM` V0/V1 worker folyamataiba (`llm.apply_model(...)`), lecserélve a `MergedColumnParallelLinear` + `RowParallelLinear` rétegeket a 2D `[num_tokens, H]` tenzorokat fogadó `FFModVLLMMLP` modulra.
-* **`ffmod-serve` (`ffmod/engine.py`, `ffmod/server.py`):** Külső web-keretrendszer függőség nélküli, többszálú HTTP/1.1 + `SSE` (`text/event-stream`) OpenAI-kompatibilis szerver (`/v1/chat/completions`, `/v1/completions`, `/v1/models`, `/health`), amely egyetlen induláskor rögzített `CUDAGraph`-fal szolgál ki tetszőleges prompt-hosszúságú kéréseket (**`4.56 GB` VRAM mellett élő HTTP+SSE streamben is `>131 tok/s` válaszsebességgel**).
+* **`ffmod-serve` (`ffmod/engine.py`, `ffmod/server.py`):** Külső web-keretrendszer függőség nélküli, többszálú HTTP/1.1 + `SSE` (`text/event-stream`) OpenAI-kompatibilis szerver (`/v1/chat/completions`, `/v1/completions`, `/v1/models`, `/health`), amely egyetlen induláskor rögzített `CUDAGraph`-fal szolgál ki tetszőleges prompt-hosszúságú kéréseket (**`4.56 GB` VRAM mellett élő HTTP+SSE streamben is `>131 tok/s` válaszsebességgel**, valamint `--tiered-vram-gb` kapcsolóval támogatja a PCIe 5.0 rétegzett futtatást is!).
+
+---
+
+## 10. 9. Kísérlet: CPU-RAM / PCIe 5.0 Rétegzett Súlytárolás és Pre-Attention Prefetch `Qwen2.5-32B-Instruct` (`65.5 GB`) Modellen (`ffmod/tiered.py`, `src/exp9_pcie_tiered_32b_benchmark.py`)
+
+A 3. kísérlet (`Exp 3`) előrejelzését élesben valósítottuk meg és hitelesítettük egy **32.8 milliárd paraméteres csúcsmodellen (`Qwen/Qwen2.5-32B-Instruct`, 64 réteg, $H=5120$, $I=27648$, `65.53 GB` BF16 — 2.73× nagyobb a 24 GB-os laptop GPU VRAM-jánál, amely még 8 bites `FP8`-ban is `>33 GB` lenne)**.
+
+![8. ábra: Qwen2.5-32B-Instruct (65.5 GB BF16) PCIe 5.0 Rétegzett Futtatás és Pre-Attention Prefetch](results/plots/fig8_pcie5_tiered_32b.png)
+
+### 10.1. Hardveres Felfedezés: 12-SM Open-Page DDR5 UVA Gather és Két-Streames `CUDAGraph` (`ffmod/tiered_kernels.py`)
+1. **DDR5 Row-Buffer Bank-Thrashing kiküszöbölése (`+30.2%` PCIe 5.0 sávszélesség):**
+   * Ha az RTX 5090 mind a `82 SM`-je egyszerre olvas nem-folytonos `15 KB`-os csatornákat Unified Virtual Addressing (UVA) módban a lefoglalt (*pinned*, `MADV_HUGEPAGE` 2 MB THP) DDR5 rendszermemóriából, a párhuzamos memóriakérések széttörik a DDR5 bankok *open-page* sorpuffereit, `29.82 GB/s`-ra korlátozva az átvitelt 100% GPU-foglaltság mellett.
+   * A `k_uva_gather_fp8_u64` kernelt **`12 SM`-re** (`num_warps=8`, 64 bites koaleszkált sorolvasás) korlátozva a DDR5 bankok szekvenciális *open-page burst* üzemmódban maradnak: a véletlenszerű csatornabegyűjtés sávszélessége **`38.83 GB/s`-ra (`+30.2%`) ugrik** (az `52.31 GB/s` folytonos `cudaMemcpyAsync` plafon `74%`-a), miközben **`70/82 SM` (`85.4%`) teljesen szabad marad** a GQA Attention és a GPU-rezidens rétegek számára (**`86.1%–99.2%` mért számítás/DMA átfedés**)!
+2. **Magas konfidenciájú *Core-Prefetch* (`0.35 × K`) + Átfedett Egzakt *Delta Fixup* egyetlen `CUDAGraph`-ban:**
+   * A `pre_attn_exact_delta` mód a Self-Attention *előtt* (illetve közbeékelt GPU-rétegnél már az előző réteg FFN-je *előtt*!) csak a legmagasabb pontszámú **`35%`-os csatorna-magot** tölti előre aszinkron `dma_stream`-en (**`92.64%` átlagos találati precizitás** a 62 kiszervezett rétegen, azaz `<2.6%` felesleges PCIe adat!), az egzakt post-attention ellenőrzést (`k_diff_pre_post_channels`) átfedi a DMA-val, és utólag csak a maradék *delta* csatornákat húzza át — a teljes 64 rétegű két-streames fork-join gráfot egyetlen **`torch.cuda.CUDAGraph`**-ba rögzítve!
+
+### 10.2. Valós `Qwen2.5-32B-Instruct` (`65.53 GB` BF16) Mérési Eredmények `21.1 GB` és `15.6 GB` VRAM Keretben
+
+| Offload Mód (`Qwen2.5-32B-Instruct`, 64 réteg) | PCIe 5.0 Adat / token | KL vs. Sűrű FP8 | Top-1 Egyezés | 24 GB GPU Profil (`21.12 GB` VRAM + `26.33 GB` DDR5) | Szigorú 16 GB GPU Profil (`15.60 GB` VRAM + `31.85 GB` DDR5) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| *Sűrű BF16 PCIe Offload Bázis* | `52.7–54.4 GB` | — | `100.0%` | `0.81 tok/s` (`1229 ms`) \| `1.00×` | `0.79 tok/s` (`1272 ms`) \| `1.00×` |
+| *Sűrű FP8 Darabolt PCIe Másolás* | `26.3–27.2 GB` | `0.0000` | `100.0%` | `1.38 tok/s` (`726 ms`) \| `1.70×` | `1.33 tok/s` (`752 ms`) \| `1.68×` |
+| **`ffmod` `sync_uva` (`65%/75%` skip)** | `8.28–8.58 GB` | `0.0320` | **`100.0%`** | `3.72 tok/s` (`269 ms`) \| **`4.59×`** | `3.13 tok/s` (`319 ms`) \| **`3.96×`** |
+| **`ffmod` `pre_attn_exact_delta` (`65%/75%`)** | `8.49–8.79 GB` | **`0.0139`** | **`100.0%`** | **`3.84 tok/s` (`260 ms`) \| `4.74×`** | `2.76 tok/s` (`362 ms`) \| `3.49×` |
+| **`ffmod` `pre_attn` (`65%/75%`, `CUDAGraph`)** | `8.28–8.58 GB` | **`0.0168`** | **`100.0%`** | **`4.12 tok/s` (`243 ms`) \| `5.09×`** | **`3.41 tok/s` (`293 ms`) \| `4.32×`** |
+| **`ffmod` `pre_attn` (`75%/80%`, `CUDAGraph`)** | **`6.12–6.33 GB`** | **`0.0424`** | **`100.0%`** | **`5.40 tok/s` (`185 ms`) \| `6.67×`** | **`4.29 tok/s` (`233 ms`) \| `5.43×`** |
+
+* **Tudományos publikációk (LaTeX + PDF):**
+  * Angol nyelvű publikáció: [`paper/ffmod_paper_en.pdf`](paper/ffmod_paper_en.pdf) (forrás: [`paper/main.tex`](paper/main.tex))
+  * Magyar nyelvű publikáció: [`paper/ffmod_paper_hu.pdf`](paper/ffmod_paper_hu.pdf) (forrás: [`paper/main_hu.tex`](paper/main_hu.tex))

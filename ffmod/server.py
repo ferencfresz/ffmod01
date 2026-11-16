@@ -337,6 +337,19 @@ def cli_main() -> None:
         help="Upper-layer channel skip ratio for KV-safe hybrid schedule (set <0 to disable)",
     )
     parser.add_argument("--max-cache-len", type=int, default=2048, help="Static KV-cache max sequence length")
+    parser.add_argument(
+        "--tiered-vram-gb",
+        type=float,
+        default=None,
+        help="Enable PCIe 5.0 Tiered GPU+DDR5 offloading capped to this GPU VRAM budget (GB), e.g. 22.0 or 16.0",
+    )
+    parser.add_argument(
+        "--offload-mode",
+        type=str,
+        choices=["pre_attn_exact_delta", "pre_attn", "sync_uva"],
+        default="pre_attn_exact_delta",
+        help="PCIe 5.0 offload mode when --tiered-vram-gb is set (default: pre_attn_exact_delta)",
+    )
     parser.add_argument("--cache-dir", type=str, default=None, help="Optional HuggingFace cache directory")
     parser.add_argument("--local-files-only", action="store_true", help="Load strictly from local HF cache")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
@@ -344,19 +357,33 @@ def cli_main() -> None:
     args = parser.parse_args()
 
     late_sp = args.late_sparsity if (args.late_sparsity is not None and args.late_sparsity >= 0.0) else None
-    print(
-        f"[ffmod-serve] Loading {args.model} | payload={args.payload} | "
-        f"sparsity={args.sparsity:.0%}" + (f" -> {late_sp:.0%} (hybrid)" if late_sp else "")
-    )
-    engine = FFModEngine.from_pretrained(
-        model_name_or_path=args.model,
-        sparsity=args.sparsity,
-        late_sparsity=late_sp,
-        payload_mode=args.payload,  # type: ignore[arg-type]
-        max_cache_len=args.max_cache_len,
-        cache_dir=args.cache_dir,
-        local_files_only=args.local_files_only,
-    )
+    if args.tiered_vram_gb is not None:
+        print(
+            f"[ffmod-serve] Loading Tiered PCIe 5.0 model {args.model} | "
+            f"VRAM budget={args.tiered_vram_gb:.1f} GB | mode={args.offload_mode}"
+        )
+        engine = FFModEngine.from_tiered(
+            model_dir=args.model,
+            vram_budget_gb=args.tiered_vram_gb,
+            sparsity=args.sparsity,
+            late_sparsity=late_sp,
+            offload_mode=args.offload_mode,
+            max_cache_len=args.max_cache_len,
+        )
+    else:
+        print(
+            f"[ffmod-serve] Loading {args.model} | payload={args.payload} | "
+            f"sparsity={args.sparsity:.0%}" + (f" -> {late_sp:.0%} (hybrid)" if late_sp else "")
+        )
+        engine = FFModEngine.from_pretrained(
+            model_name_or_path=args.model,
+            sparsity=args.sparsity,
+            late_sparsity=late_sp,
+            payload_mode=args.payload,  # type: ignore[arg-type]
+            max_cache_len=args.max_cache_len,
+            cache_dir=args.cache_dir,
+            local_files_only=args.local_files_only,
+        )
     httpd, _ = create_http_server(engine, host=args.host, port=args.port)
     actual_host, actual_port = httpd.server_address[:2]
     print(

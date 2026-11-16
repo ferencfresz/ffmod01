@@ -11,6 +11,13 @@ from ffmod.layers import IndexedSwiGLULayer
 from ffmod.ops import indexed_ffn_bf16, indexed_ffn_bitsplit12, indexed_ffn_fp8
 from ffmod.patcher import find_convertible_mlps, model_storage_bytes, patch_model
 from ffmod.server import FFModOpenAIDispatcher, create_http_server
+from ffmod.tiered import (
+    TieredOffloadSwiGLULayer,
+    install_tiered_prefetch_hooks,
+    load_tiered_causal_lm,
+    release_tiered_model,
+    set_tiered_mode,
+)
 from ffmod.vllm_plugin import FFModVLLMMLP, apply_ffmod_to_vllm, patch_vllm_model
 
 __version__ = "0.2.0"
@@ -33,4 +40,9 @@ __all__ = [
     "FFModVLLMMLP",
     "patch_vllm_model",
     "apply_ffmod_to_vllm",
+    "TieredOffloadSwiGLULayer",
+    "install_tiered_prefetch_hooks",
+    "load_tiered_causal_lm",
+    "release_tiered_model",
+    "set_tiered_mode",
 ]

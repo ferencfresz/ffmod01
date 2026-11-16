@@ -48,8 +48,9 @@ Az `ffmod` pontosan abban a tartományban gyorsít (**alacsony párhuzamosságú
 
 1. **Szótár-Indexelés az `lm_head` Rétegre (*Indexed Vocabulary Projection*):**
    - Miután az FFN-rétegeket `2.4×–3.5×`-szeresére gyorsítottuk, a nagy szótárméretű modellekben (pl. `Qwen2.5` 151 936 tokenes, `~622 MB`-os `lm_head` mátrixa) már a végső szótár-vetítés viszi el a teljes token-idő `~15–20%`-át. Ugyanez a `Top-512 Coord + Smooth-INT4` kétlépcsős index közvetlenül alkalmazható az `lm_head` soraira is, csak a legvalószínűbb `Top-2048` szótár-jelöltet számolva ki pontosan!
-2. **CPU-RAM / PCIe 5.0 Rétegzett Súlytárolás (*Pre-Attention Prefetch Offloading*):**
-   - A 3. kísérletünk (`Exp 3`) megmutatta, hogy a blokk *bemenetéből* (`Pre-Attention` állapot) már az Attention futása *előtt* megjósolhatók a szükséges FFN-csatornák. Ha a kompakt `Smooth-INT4` index a GPU VRAM-ban marad, a ritka 2. lépcsős súlyok egy része akár rendszermemóriában (DDR5 / LPDDR5X) is lakhat, és az Attention ideje alatt DMA-val csak a nyertes `K` csatorna (`6 KB/csatorna`) töltődik fel PCIe-n keresztül — lehetővé téve `70B+` modellek gyors futtatását `16–24 GB` VRAM-ú kártyákon!
+2. **CPU-RAM / PCIe 5.0 Rétegzett Súlytárolás (*Pre-Attention Prefetch Offloading*) — ✅ MEGVALÓSÍTVA ÉS IGAZOLVA (`Exp 9`, `ffmod/tiered.py`):**
+   - Megépítettük a 12-SM *Open-Page DDR5* koaleszkált UVA begyűjtést (`38.83 GB/s` PCIe 5.0, `+30.2%` a 82-SM bank-thrashing felett) és a két-streames `CUDAGraph` *Core-Prefetch + Exact Delta Fixup* motort.
+   - A 64 rétegű **`Qwen2.5-32B-Instruct` (`65.53 GB` BF16)** modellen **`92.64%` Core-35% prefetch precizitást**, **`100.0%` Top-1 egyezést (`KL = 0.0139`)**, valamint **`4.74×–6.67×` gyorsulást (`3.84–5.40 tok/s`)** értünk el `21.12 GB` VRAM mellett — sőt szigorú **`15.60 GB` VRAM** korlát alatt is **`3.41–4.29 tok/s` (`4.32×–5.43×` gyorsulás)** sebességgel fut!
 3. **Valós Idejű Réteg-20 Entrópia-Szonda (*Zero-Overhead Dynamic Token Budget*):**
    - A 20. réteg rejtett állapotának normájából/szórásából egyetlen apró skalár szondával eldönthető, hogy az adott token determinisztikus (pl. kódzárójel, kulcsszó) vagy bizonytalan elágazási pont: könnyű tokennél a felső 12 réteg automatikusan `80–85%`-os kihagyásra (`~55 µs/réteg`) válthat, nehéz tokennél pedig visszaléphet `50%`-ra.
 4. **MoE (*Mixture-of-Experts*) Szakértőkön Belüli Finom-Indexelés:**

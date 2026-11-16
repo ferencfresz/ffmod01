@@ -55,7 +55,11 @@ class FFModEngine:
         self.ffmod_config: Dict[str, Any] = getattr(
             model,
             "_ffmod_config",
-            {"payload_mode": "dense", "avg_sparsity": 0.0, "num_patched_layers": 0},
+            getattr(
+                model,
+                "_ffmod_tiered_summary",
+                {"payload_mode": "dense", "avg_sparsity": 0.0, "num_patched_layers": 0},
+            ),
         )
         self.model_vram_gb: float = round(model_storage_bytes(model) / 1e9, 3)
 
@@ -120,6 +124,46 @@ class FFModEngine:
             model_id=model_name_or_path,
             max_cache_len=max_cache_len,
             enable_cudagraph=True,
+        )
+
+    @classmethod
+    @torch.no_grad()
+    def from_tiered(
+        cls,
+        model_dir: str,
+        vram_budget_gb: float = 21.5,
+        sparsity: float = 0.65,
+        late_sparsity: Optional[float] = 0.75,
+        offload_mode: str = "pre_attn_exact_delta",
+        max_cache_len: int = 2048,
+        enable_cudagraph: bool = True,
+        device: str = "cuda",
+    ) -> "FFModEngine":
+        from ffmod.tiered import load_tiered_causal_lm
+
+        model, tokenizer, summary = load_tiered_causal_lm(
+            model_dir=model_dir,
+            vram_budget_gb=vram_budget_gb,
+            sparsity=sparsity,
+            late_sparsity=late_sparsity,
+            offload_mode=offload_mode,  # type: ignore[arg-type]
+            enable_cross_layer_lookahead=True,
+            device=device,
+        )
+        model._ffmod_config = {
+            "payload_mode": f"tiered_fp8_{offload_mode}",
+            "avg_sparsity": sparsity if late_sparsity is None else (2.0 * sparsity + late_sparsity) / 3.0,
+            "num_patched_layers": summary["num_layers"],
+            "gpu_resident_ffn_layers": summary["gpu_resident_ffn_layers"],
+            "cpu_offloaded_ffn_layers": summary["cpu_offloaded_ffn_layers"],
+            "host_pinned_ddr5_gb": summary["host_pinned_ddr5_gb"],
+        }
+        return cls(
+            model=model,
+            tokenizer=tokenizer,
+            model_id=summary["model_name"],
+            max_cache_len=max_cache_len,
+            enable_cudagraph=enable_cudagraph,
         )
 
     @torch.no_grad()
